@@ -23,13 +23,26 @@ function Import-ModulesIfNotExists {
 }
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.850'
-# Define folder path where Global Dashboards are stored. Floder called Global_Dashboards_List, on the same level as the folder from where the script is run.
-$GlobalDashboardsPath = ".\Global_Dashboards_List"
-# Import GDashboards_List in CSV from the folder "Global_Dashboards_List"
-$GlobalDashboardsList = Import-Csv -Path "$GlobalDashboardsPath\GDashboards_List.csv"
-# Create a new folder to store the reports
-$ReportPath = ".\Reports"
-if (-not (Test-Path -Path $ReportPath)) {
-    New-Item -Path $ReportPath -ItemType Directory
+# Import CSV file that contains the Global Dashboards information located in the same directory as the script
+$GlobalDashboards = Import-Csv -Path .\GlobalDashboards_List.csv
+# Define the directories to save the reports
+$UsersOGD = ".\Users_OneView_Global_Dashboard"
+$AppliancesDirectory = ".\Appliances-Details"
+# Define a function to create a directory if it doesn't exist
+function New-Directory {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$DirectoryPath
+    )
+
+    if (-not (Test-Path -Path $DirectoryPath)) {
+        New-Item -Path $DirectoryPath -ItemType Directory | Out-Null
+        Write-Host "Directory $DirectoryPath created." -ForegroundColor Green
+    } else {
+        Write-Host "Directory $DirectoryPath already exists." -ForegroundColor Yellow
+    }
 }
- 
+
+# Use the function to create the directories
+New-Directory -DirectoryPath $UsersOGD
+New-Directory -DirectoryPath $AppliancesDirectory
