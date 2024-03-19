@@ -1,16 +1,27 @@
+$scriptName = Split-Path -Path $MyInvocation.MyCommand.Definition -Leaf
+$logDirPath = Join-Path $PSScriptRoot ($scriptName + "_LOG")
+
+if (!(Test-Path $logDirPath)) {
+    New-Item -ItemType Directory -Path $logDirPath -Force
+}
+
+$logFilePath = Join-Path $logDirPath "log.txt"
+
+if (!(Test-Path $logFilePath)) {
+    New-Item -ItemType File -Path $logFilePath -Force
+}
+
 function Write-Log {
     param (
         [Parameter(Mandatory=$true)]
         [string]$Message,
         [Parameter(Mandatory=$true)]
         [ValidateSet("Error", "Warn", "Info")]
-        [string]$Level,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
+        [string]$Level
     )
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $logMessage = "$timestamp - $Level - $Message"
-    Add-Content -Path $Path -Value $logMessage
+    Add-Content -Path $logFilePath -Value $logMessage
 
     switch ($Level) {
         "Error" { 
