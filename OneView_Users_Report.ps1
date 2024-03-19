@@ -5,8 +5,8 @@ function Write-Log {
         [Parameter(Mandatory=$true)]
         [ValidateSet("Error", "Warn", "Info")]
         [string]$Level,
-        [Parameter(Mandatory=$false)]
-        [string]$Path,
+        [Parameter(Mandatory=$true)]
+        [string]$logFilePath,
         [Parameter(Mandatory=$false)]
         [string]$ModuleName
     )
@@ -44,14 +44,15 @@ function Write-Log {
         }
     }
 }
+
 $scriptName = (Get-Item $MyInvocation.MyCommand.Definition).BaseName
 $logDirPath = Join-Path $PSScriptRoot ($scriptName + "_LOG")
 
 if (!(Test-Path $logDirPath)) {
     New-Item -ItemType Directory -Path $logDirPath -Force
-    Write-Log -Message "Log directory $logDirPath created." -Level Info
+    Write-Log -Message "Log directory $logDirPath created." -Level Info -logFilePath $logDirPath
 } else {
-    Write-Log -Message "Log directory $logDirPath already exists." -Level Info
+    Write-Log -Message "Log directory $logDirPath already exists." -Level Info -logFilePath $logDirPath
 }
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -60,10 +61,11 @@ $logFilePath = Join-Path $logDirPath $logFileName
 
 if (!(Test-Path $logFilePath)) {
     New-Item -ItemType File -Path $logFilePath -Force
-    Write-Log -Message "Log file $logFilePath created." -Level Info
+    Write-Log -Message "Log file $logFilePath created." -Level Info -logFilePath $logFilePath
 } else {
-    Write-Log -Message "Log file $logFilePath already exists." -Level Info
+    Write-Log -Message "Log file $logFilePath already exists." -Level Info -logFilePath $logFilePath
 }
+
 function Import-ModulesIfNotExists {
     param (
         [Parameter(Mandatory=$true)]
@@ -76,19 +78,20 @@ function Import-ModulesIfNotExists {
             if (Get-Module -ListAvailable -Name $ModuleName) {
                 Import-Module $ModuleName
                 $message = "`tModule '$ModuleName' is not imported. Importing now..."
-                Write-Log -Message $message -Level "Warn" -Path $logFilePath
+                Write-Log -Message $message -Level "Warn" -logFilePath $logFilePath
                 $currentModule++
                 $percentComplete = ($currentModule / $totalModules) * 100
                 Write-Progress -Activity "`tImporting modules" -Status "Imported module '$ModuleName'" -PercentComplete $percentComplete
             } else {
                 $message = "`tModule '$ModuleName' does not exist."
-                Write-Log -Message $message -Level "Error" -Path $logFilePath
+                Write-Log -Message $message -Level "Error" -logFilePath $logFilePath
             }
         } else {
             $message = "`tModule '$ModuleName' is already imported."
-            Write-Log -Message $message -Level "Info" -Path $logFilePath
+            Write-Log -Message $message -Level "Info" -logFilePath $logFilePath
         }
     }
 }
+
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.850', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility'
