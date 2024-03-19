@@ -1,3 +1,35 @@
+function Write-Log {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Message,
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("Error", "Warn", "Info")]
+        [string]$Level,
+        [Parameter(Mandatory=$true)]
+        [string]$Path
+    )
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "$timestamp - $Level - $Message"
+    Add-Content -Path $Path -Value $logMessage
+
+    switch ($Level) {
+        "Error" { 
+            Write-Host "`tModule '" -NoNewline
+            Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
+            Write-Host "' does not exist." -ForegroundColor Red
+        }
+        "Warn"  { 
+            Write-Host "`tModule '" -NoNewline
+            Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
+            Write-Host "' is not imported. Importing now..." -ForegroundColor Yellow
+        }
+        "Info"  { 
+            Write-Host "`tModule '" -NoNewline
+            Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
+            Write-Host "' is already imported." -ForegroundColor Green
+        }
+    }
+}
 function Import-ModulesIfNotExists {
     param (
         [Parameter(Mandatory=$true)]
@@ -9,16 +41,18 @@ function Import-ModulesIfNotExists {
         if (-not (Get-Module -Name $ModuleName)) {
             if (Get-Module -ListAvailable -Name $ModuleName) {
                 Import-Module $ModuleName
-                Write-Host "`tModule '$ModuleName' is not imported. Importing now..." -ForegroundColor Yellow
+                $message = "`tModule '$ModuleName' is not imported. Importing now..."
+                Write-Log -Message $message -Level "Warn" -Path $logFilePath
                 $currentModule++
                 $percentComplete = ($currentModule / $totalModules) * 100
                 Write-Progress -Activity "`tImporting modules" -Status "Imported module '$ModuleName'" -PercentComplete $percentComplete
-                Start-Sleep -Milliseconds 500
             } else {
-                Write-Host "`tModule '$ModuleName' does not exist." -ForegroundColor Red
+                $message = "`tModule '$ModuleName' does not exist."
+                Write-Log -Message $message -Level "Error" -Path $logFilePath
             }
         } else {
-            Write-Host "`tModule '$ModuleName' is already imported." -ForegroundColor Green
+            $message = "`tModule '$ModuleName' is already imported."
+            Write-Log -Message $message -Level "Info" -Path $logFilePath
         }
     }
 }
