@@ -13,6 +13,7 @@ function Import-ModulesIfNotExists {
                 $currentModule++
                 $percentComplete = ($currentModule / $totalModules) * 100
                 Write-Progress -Activity "`tImporting modules" -Status "Imported module '$ModuleName'" -PercentComplete $percentComplete
+                Start-Sleep -Milliseconds 500
             } else {
                 Write-Host "`tModule '$ModuleName' does not exist." -ForegroundColor Red
             }
