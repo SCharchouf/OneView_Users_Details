@@ -4,7 +4,11 @@ function Write-Log {
         [string]$Message,
         [Parameter(Mandatory=$true)]
         [ValidateSet("Error", "Warn", "Info")]
-        [string]$Level
+        [string]$Level,
+        [Parameter(Mandatory=$false)]
+        [string]$Path,
+        [Parameter(Mandatory=$false)]
+        [string]$ModuleName
     )
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $logMessage = "$timestamp - $Level - $Message"
@@ -12,19 +16,31 @@ function Write-Log {
 
     switch ($Level) {
         "Error" { 
-            Write-Host "`tModule '" -NoNewline
-            Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
-            Write-Host "' does not exist." -ForegroundColor Red
+            if ($ModuleName) {
+                Write-Host "`tModule '" -NoNewline
+                Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
+                Write-Host "' does not exist." -ForegroundColor Red
+            } else {
+                Write-Host $Message -ForegroundColor Red
+            }
         }
         "Warn"  { 
-            Write-Host "`tModule '" -NoNewline
-            Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
-            Write-Host "' is not imported. Importing now..." -ForegroundColor Yellow
+            if ($ModuleName) {
+                Write-Host "`tModule '" -NoNewline
+                Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
+                Write-Host "' is not imported. Importing now..." -ForegroundColor Yellow
+            } else {
+                Write-Host $Message -ForegroundColor Yellow
+            }
         }
         "Info"  { 
-            Write-Host "`tModule '" -NoNewline
-            Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
-            Write-Host "' is already imported." -ForegroundColor Green
+            if ($ModuleName) {
+                Write-Host "`tModule '" -NoNewline
+                Write-Host $ModuleName -NoNewline -ForegroundColor Cyan
+                Write-Host "' is already imported." -ForegroundColor Green
+            } else {
+                Write-Host $Message -ForegroundColor Green
+            }
         }
     }
 }
