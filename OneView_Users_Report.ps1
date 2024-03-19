@@ -1,16 +1,3 @@
-$scriptName = Split-Path -Path $MyInvocation.MyCommand.Definition -Leaf
-$logDirPath = Join-Path $PSScriptRoot ($scriptName + "_LOG")
-
-if (!(Test-Path $logDirPath)) {
-    New-Item -ItemType Directory -Path $logDirPath -Force
-}
-
-$logFilePath = Join-Path $logDirPath "log.txt"
-
-if (!(Test-Path $logFilePath)) {
-    New-Item -ItemType File -Path $logFilePath -Force
-}
-
 function Write-Log {
     param (
         [Parameter(Mandatory=$true)]
@@ -40,6 +27,26 @@ function Write-Log {
             Write-Host "' is already imported." -ForegroundColor Green
         }
     }
+}
+$scriptName = (Get-Item $MyInvocation.MyCommand.Definition).BaseName
+$logDirPath = Join-Path $PSScriptRoot ($scriptName + "_LOG")
+
+if (!(Test-Path $logDirPath)) {
+    New-Item -ItemType Directory -Path $logDirPath -Force
+    Write-Log -Message "Log directory $logDirPath created." -Level Info
+} else {
+    Write-Log -Message "Log directory $logDirPath already exists." -Level Info
+}
+
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$logFileName = $scriptName + "_" + $timestamp + ".log"
+$logFilePath = Join-Path $logDirPath $logFileName
+
+if (!(Test-Path $logFilePath)) {
+    New-Item -ItemType File -Path $logFilePath -Force
+    Write-Log -Message "Log file $logFilePath created." -Level Info
+} else {
+    Write-Log -Message "Log file $logFilePath already exists." -Level Info
 }
 function Import-ModulesIfNotExists {
     param (
