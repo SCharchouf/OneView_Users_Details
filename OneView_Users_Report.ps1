@@ -40,23 +40,28 @@ Import-ModulesIfNotExists -ModuleNames 'HPEOneView.850', 'Microsoft.PowerShell.S
 $csvFileName = "Appliances_List.csv"
 # Create the full path to the CSV file
 $csvFilePath = Join-Path -Path $scriptPath -ChildPath $csvFileName
+# Define the path to the credential file
+$credentialPath = Join-Path -Path $scriptPath -ChildPath "credential\credential.txt"
 # Function to connect to an appliance
 Function Connect-OneViewAppliance {
     param (
         [string]$ApplianceIP,
-        [string]$Username,
-        [SecureString]$Password
+        [PSCredential]$Credential
     )
-    $OneViewCreds = New-Object System.Management.Automation.PSCredential($Username, ($Password | ConvertTo-SecureString -AsPlainText -Force))
-    Connect-OVMgmt -Hostname $ApplianceIP -Credential $OneViewCreds
+    Connect-OVMgmt -Hostname $ApplianceIP -Credential $Credential
 }
 
-# Import the CSV file
-$AppliancesList = Import-Csv -Path $csvFilePath
-
-# Loop through each appliance and connect
-foreach ($appliance in $AppliancesList) {
-    Connect-OneViewAppliance -ApplianceIP $appliance.ApplianceIP -Username $appliance.Username -Password $appliance.Password
+# Check if the credential file exists
+if (!(Test-Path -Path $credentialPath)) {
+    # If not, ask for the username and password and store them in the credential file
+    $credential = Get-Credential -Message "Enter your username and password"
+    $credential | Export-Clixml -Path $credentialPath
+} else {
+    # If the credential file exists, load the credential from it
+    $credential = Import-Clixml -Path $credentialPath
 }
 
-
+# Import the CSV file and connect to each appliance
+Import-Csv -Path $csvFilePath | ForEach-Object {
+    Connect-OneViewAppliance -ApplianceIP $_.FQDN -Credential $credential
+}
