@@ -40,8 +40,10 @@ Import-ModulesIfNotExists -ModuleNames 'HPEOneView.850', 'Microsoft.PowerShell.S
 $csvFileName = "Appliances_List.csv"
 # Create the full path to the CSV file
 $csvFilePath = Join-Path -Path $scriptPath -ChildPath $csvFileName
-# Define the path to the credential file
-$credentialPath = Join-Path -Path $scriptPath -ChildPath "credential\credential.txt"
+# Define the path to the credential folder and file
+$credentialFolder = Join-Path -Path $scriptPath -ChildPath "credential"
+$credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
+
 # Function to connect to an appliance
 Function Connect-OneViewAppliance {
     param (
@@ -51,14 +53,21 @@ Function Connect-OneViewAppliance {
     Connect-OVMgmt -Hostname $ApplianceIP -Credential $Credential
 }
 
+# Check if the credential folder exists, if not, create it
+if (!(Test-Path -Path $credentialFolder)) {
+    Write-Log -Message "The credential folder $credentialFolder does not exist. Create it now..." -Level "Warning" -sFullPath $global:sFullPath
+    New-Item -ItemType Directory -Path $credentialFolder | Out-Null
+    Write-Log -Message "The credential folder $credentialFolder has been created successfully." -Level "OK" -sFullPath $global:sFullPath
+}
+
 # Check if the credential file exists
-if (!(Test-Path -Path $credentialPath)) {
+if (!(Test-Path -Path $credentialFile)) {
     # If not, ask for the username and password and store them in the credential file
     $credential = Get-Credential -Message "Enter your username and password"
-    $credential | Export-Clixml -Path $credentialPath
+    $credential | Export-Clixml -Path $credentialFile
 } else {
     # If the credential file exists, load the credential from it
-    $credential = Import-Clixml -Path $credentialPath
+    $credential = Import-Clixml -Path $credentialFile
 }
 
 # Import the CSV file and connect to each appliance
