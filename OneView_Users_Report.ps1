@@ -44,23 +44,24 @@ $csvFilePath = Join-Path -Path $scriptPath -ChildPath $csvFileName
 $credentialFolder = Join-Path -Path $scriptPath -ChildPath "credential"
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 
-# Function to connect to an appliance
 Function Connect-OneViewAppliance {
     param (
         [string]$ApplianceFQDN,
         [PSCredential]$Credential
     )
-try {
-    # Check if a connection to the appliance already exists
-    $existingConnection = $ConnectedSessions | Where-Object { $_.Hostname -eq $ApplianceFQDN }
 
-    if ($existingConnection) {
-        # If a connection already exists, write and log a message
-        $message = "Already connected to : $ApplianceFQDN"
-        Write-Host $message
-        Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
-    } else {
-        # If no connection exists, try to connect to the appliance
+    try {
+        # Check if a connection to the appliance already exists
+        $existingConnection = $ConnectedSessions | Where-Object { $_.Hostname -eq $ApplianceFQDN }
+
+        if ($existingConnection) {
+            # If a connection already exists, write and log a message
+            $message = "Already connected to : $ApplianceFQDN"
+            Write-Host $message
+            Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+        }
+
+        # Always attempt to connect to the appliance
         $connection = Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential
 
         # If the connection is successful, write and log a success message
@@ -69,11 +70,9 @@ try {
             Write-Host $message
             Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
         }
-    }
-} catch {
-    Write-Log -Message "Failed to connect to : $ApplianceFQDN. Error details: $_" -Level "Error" -sFullPath $global:sFullPath
-
-}    
+    } catch {
+        Write-Log -Message "Failed to connect to : $ApplianceFQDN. Error details: $_" -Level "Error" -sFullPath $global:sFullPath
+    }    
 }
 # Check if the credential folder exists, if not, create it
 if (!(Test-Path -Path $credentialFolder)) {
