@@ -50,9 +50,9 @@ Function Connect-OneViewAppliance {
         [string]$ApplianceFQDN,
         [PSCredential]$Credential
     )
-
+try {
     # Check if a connection to the appliance already exists
-    $existingConnection = Get-OVConnection | Where-Object { $_.Hostname -eq $ApplianceFQDN }
+    $existingConnection = $ConnectedSessions | Where-Object { $_.Hostname -eq $ApplianceFQDN }
 
     if ($existingConnection) {
         # If a connection already exists, write and log a message
@@ -70,8 +70,11 @@ Function Connect-OneViewAppliance {
             Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
         }
     }
-}
+} catch {
+    Write-Log -Message "Failed to connect to : $ApplianceFQDN. Error details: $_" -Level "Error" -sFullPath $global:sFullPath
 
+}    
+}
 # Check if the credential folder exists, if not, create it
 if (!(Test-Path -Path $credentialFolder)) {
     Write-Log -Message "The credential folder $credentialFolder does not exist. Create it now..." -Level "Warning" -sFullPath $global:sFullPath
@@ -96,5 +99,5 @@ if (Test-Path -Path $credentialFile) {
 
 # Import the CSV file and connect to each appliance
 Import-Csv -Path $csvFilePath | ForEach-Object {
-    Connect-OneViewAppliance -ApplianceIP $_.FQDN -Credential $credential
+    Connect-OneViewAppliance -ApplianceFQDN $_.FQDN -Credential $credential
 }
