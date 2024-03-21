@@ -1,7 +1,7 @@
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $loggingFunctionsPath = Join-Path -Path $scriptPath -ChildPath "..\Logging_Function\Logging_Functions.ps1"
 . $loggingFunctionsPath
-$ScriptVersion = "1.1"
+$ScriptVersion = "1.0"
 function Import-ModulesIfNotExists {
     param (
         [Parameter(Mandatory=$true)]
@@ -47,10 +47,29 @@ $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 # Function to connect to an appliance
 Function Connect-OneViewAppliance {
     param (
-        [string]$ApplianceIP,
+        [string]$ApplianceFQDN,
         [PSCredential]$Credential
     )
-    Connect-OVMgmt -Hostname $ApplianceIP -Credential $Credential
+
+    # Check if a connection to the appliance already exists
+    $existingConnection = Get-OVConnection | Where-Object { $_.Hostname -eq $ApplianceFQDN }
+
+    if ($existingConnection) {
+        # If a connection already exists, write and log a message
+        $message = "Already connected to : $ApplianceFQDN"
+        Write-Host $message
+        Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+    } else {
+        # If no connection exists, try to connect to the appliance
+        $connection = Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential
+
+        # If the connection is successful, write and log a success message
+        if ($connection) {
+            $message = "Successfully connected to : $ApplianceFQDN"
+            Write-Host $message
+            Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
+        }
+    }
 }
 
 # Check if the credential folder exists, if not, create it
@@ -60,14 +79,19 @@ if (!(Test-Path -Path $credentialFolder)) {
     Write-Log -Message "The credential folder $credentialFolder has been created successfully." -Level "OK" -sFullPath $global:sFullPath
 }
 
-# Check if the credential file exists
-if (!(Test-Path -Path $credentialFile)) {
-    # If not, ask for the username and password and store them in the credential file
+# If the credential file exists, try to load the credential from it
+if (Test-Path -Path $credentialFile) {
+    try {
+        $credential = Import-Clixml -Path $credentialFile
+    } catch {
+        Write-Host "Error loading credential file. Please enter your credentials."
+        $credential = Get-Credential -Message "Enter your username and password"
+        $credential | Export-Clixml -Path $credentialFile
+    }
+} else {
+    # If the credential file doesn't exist, ask for the username and password and store them in the credential file
     $credential = Get-Credential -Message "Enter your username and password"
     $credential | Export-Clixml -Path $credentialFile
-} else {
-    # If the credential file exists, load the credential from it
-    $credential = Import-Clixml -Path $credentialFile
 }
 
 # Import the CSV file and connect to each appliance
