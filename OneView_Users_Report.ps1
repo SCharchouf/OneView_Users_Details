@@ -13,26 +13,26 @@ function Import-ModulesIfNotExists {
 
     $totalModules = $ModuleNames.Count
     $currentModule = 0
-    foreach ($ModuleName in $ModuleNames) {
+foreach ($ModuleName in $ModuleNames) {
+    if (Get-Module -ListAvailable -Name $ModuleName) {
         if (-not (Get-Module -Name $ModuleName)) {
-            if (Get-Module -ListAvailable -Name $ModuleName) {
-                Import-Module $ModuleName
-                $message = "`tModule '$ModuleName' is not imported. Importing now..."
-                Write-Log -Message $message -Level "Warning" -sFullPath $global:sFullPath
-                $currentModule++
-                $percentComplete = ($currentModule / $totalModules) * 100
-                Write-Progress -Activity "`tImporting modules" -Status "Imported module '$ModuleName'" -PercentComplete $percentComplete
-                $message = "`tModule '$ModuleName' imported successfully."
-                Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
-            } else {
-                $message = "`tModule '$ModuleName' does not exist."
-                Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
-            }
+            Import-Module $ModuleName
+            $message = "`tModule '$ModuleName' is not imported. Importing now..."
+            Write-Log -Message $message -Level "Warning" -sFullPath $global:sFullPath
+            $currentModule++
+            $percentComplete = ($currentModule / $totalModules) * 100
+            Write-Progress -Activity "`tImporting modules" -Status "Imported module '$ModuleName'" -PercentComplete $percentComplete
+            $message = "`tModule '$ModuleName' imported successfully."
+            Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
         } else {
             $message = "`tModule '$ModuleName' is already imported."
             Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
         }
+    } else {
+        $message = "`tModule '$ModuleName' does not exist."
+        Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
     }
+}
 }
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.850', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility'
