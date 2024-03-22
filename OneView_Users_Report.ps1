@@ -60,10 +60,11 @@ Function Connect-OneViewAppliance {
             # Attempt to connect to the appliance
             $connection = Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential
 
-            # If the connection is successful, log a success message
+            # If the connection is successful, log a success message and update $ConnectedSessions
             if ($connection) {
                 $message = "Successfully connected to : $ApplianceFQDN"
                 Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
+                $ConnectedSessions += $connection
             }
         } catch {
             Write-Log -Message "Failed to connect to : $ApplianceFQDN. Error details: $_" -Level "Error" -sFullPath $global:sFullPath
@@ -71,7 +72,6 @@ Function Connect-OneViewAppliance {
     }
 }
 
-# Rest of your script...
 # Check if the credential folder exists, if not, create it
 if (!(Test-Path -Path $credentialFolder)) {
     Write-Log -Message "The credential folder $credentialFolder does not exist. Create it now..." -Level "Warning" -sFullPath $global:sFullPath
