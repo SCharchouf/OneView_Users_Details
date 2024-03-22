@@ -11,19 +11,17 @@ function Import-ModulesIfNotExists {
     Start-Log -ScriptVersion $ScriptVersion -ScriptPath $PSCommandPath
     # Get the log file path from the start-log function
 
-    $totalModules = $ModuleNames.Count
-    $currentModule = 0
     foreach ($ModuleName in $ModuleNames) {
         if (Get-Module -ListAvailable -Name $ModuleName) {
             if (-not (Get-Module -Name $ModuleName)) {
                 Import-Module $ModuleName
-                $message = "`tModule '$ModuleName' is not imported. Importing now..."
-                Write-Log -Message $message -Level "Warning" -sFullPath $global:sFullPath
-                $currentModule++
-                $percentComplete = ($currentModule / $totalModules) * 100
-                Write-Log -Message "`tImported module '$ModuleName' ($percentComplete% complete)" -Level "Info" -sFullPath $global:sFullPath
-                $message = "`tModule '$ModuleName' imported successfully."
-                Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
+                if (-not (Get-Module -Name $ModuleName)) {
+                    $message = "`tFailed to import module '$ModuleName'."
+                    Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
+                } else {
+                    $message = "`tModule '$ModuleName' imported successfully."
+                    Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
+                }
             } else {
                 $message = "`tModule '$ModuleName' is already imported."
                 Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
