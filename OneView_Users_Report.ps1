@@ -67,13 +67,12 @@ Function Connect-OneViewAppliance {
 
         # Loop through each user and get assigned scopes
         foreach ($user in $users) {
-            $userScopes = $user.Scopes
-
+            
             # Combine user details and scopes (modify as needed)
             $userDetail = New-Object PSObject
             $userDetail | Add-Member -Type NoteProperty -Name UserName -Value $user.userName
-            $userDetail | Add-Member -Type NoteProperty -Name Email -Value $user.email
-            $userDetail | Add-Member -Type NoteProperty -Name Scopes -Value ($userScopes -join ', ')
+            $userDetail | Add-Member -Type NoteProperty -Name Roles -Value ($user.roles -join ', ')
+            $userDetail | Add-Member -Type NoteProperty -Name Scopes -Value ($user.scopes -join ', ')
 
             # Add the combined object to the array for further processing
             $userWithScopes += $userDetail
