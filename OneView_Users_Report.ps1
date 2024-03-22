@@ -33,7 +33,7 @@ function Import-ModulesIfNotExists {
     }
 }
 # Import the required modules
-Import-ModulesIfNotExists -ModuleNames 'HPEOneView.850', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
+Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
 # Define CSV file name
 $csvFileName = "Appliances_List.csv"
 # Create the full path to the CSV file
@@ -69,6 +69,11 @@ Function Connect-OneViewAppliance {
         # Check if the folder exists and create it if it doesn't
         if (-not (Test-Path -Path $folderPath)) {
             New-Item -ItemType Directory -Path $folderPath | Out-Null
+            $message = "Reports folder does not exist. Created new folder: $folderPath"
+            Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+        } else {
+            $message = "Reports folder already exists: $folderPath"
+            Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
         }
 
         # Export user details to the Excel file
