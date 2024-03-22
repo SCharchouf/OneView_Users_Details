@@ -41,7 +41,6 @@ $csvFilePath = Join-Path -Path $scriptPath -ChildPath $csvFileName
 # Define the path to the credential folder and file
 $credentialFolder = Join-Path -Path $scriptPath -ChildPath "credential"
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
-
 Function Connect-OneViewAppliance {
     param (
         [string]$ApplianceFQDN,
@@ -58,20 +57,16 @@ Function Connect-OneViewAppliance {
     } else {
         try {
             # Attempt to connect to the appliance
-            $connection = Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential
+            Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential
 
-            # If the connection is successful, log a success message and update $ConnectedSessions
-            if ($connection) {
-                $message = "Successfully connected to : $ApplianceFQDN"
-                Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
-                $ConnectedSessions += $connection
-            }
+            # If the connection is successful, log a success message
+            $message = "Successfully connected to : $ApplianceFQDN"
+            Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
         } catch {
             Write-Log -Message "Failed to connect to : $ApplianceFQDN. Error details: $_" -Level "Error" -sFullPath $global:sFullPath
         }    
     }
 }
-
 # Check if the credential folder exists, if not, create it
 if (!(Test-Path -Path $credentialFolder)) {
     Write-Log -Message "The credential folder $credentialFolder does not exist. Create it now..." -Level "Warning" -sFullPath $global:sFullPath
