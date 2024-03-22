@@ -51,9 +51,6 @@ Function Connect-OneViewAppliance {
         # Attempt to connect to the appliance
         Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential -ErrorAction Stop
 
-        # retrieve the token from the connection object
-        $env:HPOneView_Token = $Connection.sessionID
-
         # If the connection is successful, log a success message
         $message = "Successfully connected to : $ApplianceFQDN"
         Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
@@ -66,18 +63,17 @@ Function Connect-OneViewAppliance {
         $userWithScopes = @()
 
         # Get all users
-        $users = Invoke-RestMethod -Uri "https://$ApplianceFQDN/rest/users" -Method Get -Headers @{ "X-Api-Version" = "5.10" ; "Authorization" = "Bearer $($env:HPOneView_Token)"}
+        $users = Get-OVUser
 
         # Loop through each user and get assigned scopes
-        foreach ($user in $users.members) {
-            $userId = $user.uri.Split("/")[-1]
-            $userScopes = Invoke-RestMethod -Uri "https://$ApplianceFQDN/rest/users/$userId/scopes" -Method Get -Headers @{ "X-Api-Version" = "5.10" ; "Authorization" = "Bearer $($env:HPOneView_Token)"}
+        foreach ($user in $users) {
+            $userScopes = $user.Scopes
 
             # Combine user details and scopes (modify as needed)
             $userDetail = New-Object PSObject
             $userDetail | Add-Member -Type NoteProperty -Name UserName -Value $user.userName
             $userDetail | Add-Member -Type NoteProperty -Name Email -Value $user.email
-            $userDetail | Add-Member -Type NoteProperty -Name Scopes -Value ($userScopes.members.name -join ', ')
+            $userDetail | Add-Member -Type NoteProperty -Name Scopes -Value ($userScopes -join ', ')
 
             # Add the combined object to the array for further processing
             $userWithScopes += $userDetail
