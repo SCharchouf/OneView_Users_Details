@@ -51,6 +51,9 @@ Function Connect-OneViewAppliance {
         # Attempt to connect to the appliance
         Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential -ErrorAction Stop
 
+        # retrieve the token from the connection object
+        $env:HPOneView_Token = $Connection.sessionID
+
         # If the connection is successful, log a success message
         $message = "Successfully connected to : $ApplianceFQDN"
         Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
