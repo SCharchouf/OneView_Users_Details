@@ -51,25 +51,27 @@ Function Connect-OneViewAppliance {
         # Attempt to connect to the appliance
         Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential -ErrorAction Stop
 
-        # If the connection is successful, log a success message
-        $message = "Successfully connected to : $ApplianceFQDN"
-        Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
+        # Initialize an array to hold user details
+        $userWithScopesAndRoles = @()
 
-        # Log a progress message
-        $message = "Generating report for $ApplianceFQDN..."
-        Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
-
-        # Retrieve user details
+        # Get all users
         $users = Get-OVUser
 
         foreach ($user in $users) {
             # Get the role and scope for each user
             $role = Get-OVUserRole -UserName $user.name
 
-            # Log user details
-            $message = "User: $($user.name), Directory: $($user.Directory), Role: $($role.roleName), Scope: $($role.scope)"
-            Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+            # Combine user details, role and scopes (modify as needed)
+            $userDetail = New-Object PSObject
+            $userDetail | Add-Member -Type NoteProperty -Name UserName -Value $user.name
+            $userDetail | Add-Member -Type NoteProperty -Name Role -Value $role.roleName
+            $userDetail | Add-Member -Type NoteProperty -Name Scopes -Value ($role.scope -join ', ')
+            $userDetail | Add-Member -Type NoteProperty -Name Enabled -Value $user.enabled
+
+            # Add the combined object to the array for further processing
+            $userWithScopesAndRoles += $userDetail
         }
+
         # Define the path to the Excel file
         $folderPath = Join-Path -Path $scriptPath -ChildPath "Reports"
         $excelFilePath = Join-Path -Path $folderPath -ChildPath "Users_$ApplianceFQDN.xlsx"
@@ -77,29 +79,18 @@ Function Connect-OneViewAppliance {
         # Check if the folder exists and create it if it doesn't
         if (-not (Test-Path -Path $folderPath)) {
             New-Item -ItemType Directory -Path $folderPath | Out-Null
-            $message = "Reports folder does not exist. Created new folder: $folderPath"
-            Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
-        } else {
-            $message = "Reports folder already exists: $folderPath"
-            Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
         }
 
         # Export user details to the Excel file
-        $users | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -FreezeTopRow
-
-        # Log a completion message
-        $message = "Report for $ApplianceFQDN completed."
-        Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+        $userWithScopesAndRoles | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -FreezeTopRow
 
     } catch {
         # If a connection already exists, log a message and continue
         if ($_.Exception.Message -like "*already connected*") {
-            $message = "Already connected to : $ApplianceFQDN"
-            Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+            Write-Output "Already connected to : $ApplianceFQDN"
         } else {
             # If the connection fails for any other reason, log an error message
-            $message = "Failed to connect to : $ApplianceFQDN. Error details: $($_.Exception.Message)"
-            Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
+            Write-Output "Failed to connect to : $ApplianceFQDN. Error details: $($_.Exception.Message)"
         }    
     }
 }
