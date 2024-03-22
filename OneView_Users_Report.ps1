@@ -33,7 +33,7 @@ function Import-ModulesIfNotExists {
     }
 }
 # Import the required modules
-Import-ModulesIfNotExists -ModuleNames 'HPEOneView.850', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility'
+Import-ModulesIfNotExists -ModuleNames 'HPEOneView.850', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
 # Define CSV file name
 $csvFileName = "Appliances_List.csv"
 # Create the full path to the CSV file
