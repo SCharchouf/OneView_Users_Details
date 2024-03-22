@@ -59,8 +59,17 @@ Function Connect-OneViewAppliance {
         $message = "Generating report for $ApplianceFQDN..."
         Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
 
-        # Retrieve user details
-        $users = Get-OVUser
+                # Retrieve user details
+                $directoryUsers = Get-OVUser -Directory
+
+                foreach ($user in $directoryUsers) {
+                    # Get the role and scope for each user
+                    $role = Get-OVUserRole -UserName $user.name
+        
+                    # Log user details
+                    $message = "User: $($user.name), Role: $($role.roleName), Scope: $($role.scope)"
+                    Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+                }
 
         # Define the path to the Excel file
         $folderPath = Join-Path -Path $scriptPath -ChildPath "Reports"
