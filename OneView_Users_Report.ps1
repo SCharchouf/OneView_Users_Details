@@ -54,6 +54,12 @@ Function Connect-OneViewAppliance {
         # If the connection is successful, log a success message
         $message = "Successfully connected to : $ApplianceFQDN"
         Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
+        # Retreive user details
+        $Users = Get-OVUser
+        # Define the path to the Excel file
+        $excelFilePath = Join-Path -Path $scriptPath -ChildPath "Users_Report.xlsx"
+        # Export the user details to a new sheet in the Excel file
+        $Users | Export-Excel -Path $excelFilePath -WorksheetName $ApplianceFQDN -AutoSize -AutoFilter -FreezeTopRow
     } catch {
         # If a connection already exists, log a message and continue
         if ($_.Exception.Message -like "*already connected*") {
