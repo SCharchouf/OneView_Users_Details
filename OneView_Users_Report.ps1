@@ -47,22 +47,19 @@ Function Connect-OneViewAppliance {
         [PSCredential]$Credential
     )
 
-    # Check if a connection to the appliance already exists
-    $existingConnection = $ConnectedSessions | Where-Object { $_.Hostname -eq $ApplianceFQDN }
+    try {
+        # Attempt to connect to the appliance
+        Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential
 
-    if ($existingConnection) {
-        # If a connection already exists, log a message
-        $message = "Already connected to : $ApplianceFQDN"
-        Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
-    } else {
-        try {
-            # Attempt to connect to the appliance
-            Connect-OVMgmt -Hostname $ApplianceFQDN -Credential $Credential
-
-            # If the connection is successful, log a success message
-            $message = "Successfully connected to : $ApplianceFQDN"
-            Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
-        } catch {
+        # If the connection is successful, log a success message
+        $message = "Successfully connected to : $ApplianceFQDN"
+        Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
+    } catch {
+        # If a connection already exists, log a message and continue
+        if ($_.Exception.Message -like "*already connected*") {
+            $message = "Already connected to : $ApplianceFQDN"
+            Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+        } else {
             Write-Log -Message "Failed to connect to : $ApplianceFQDN. Error details: $_" -Level "Error" -sFullPath $global:sFullPath
         }    
     }
