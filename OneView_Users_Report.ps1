@@ -54,13 +54,30 @@ Function Connect-OneViewAppliance {
         # If the connection is successful, log a success message
         $message = "Successfully connected to : $ApplianceFQDN"
         Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
-        # Retreive user details
-        $Users = Get-OVUser
-                # Define the path to the Excel file
-                $excelFilePath = Join-Path -Path $scriptPath -ChildPath "Users_$ApplianceFQDN.xlsx"
 
-                # Export user details to the Excel file
-                $users | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -FreezeTopRow
+        # Log a progress message
+        $message = "Generating report for $ApplianceFQDN..."
+        Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+
+        # Retrieve user details
+        $users = Get-OVUser
+
+        # Define the path to the Excel file
+        $folderPath = Join-Path -Path $scriptPath -ChildPath "Reports"
+        $excelFilePath = Join-Path -Path $folderPath -ChildPath "Users_$ApplianceFQDN.xlsx"
+
+        # Check if the folder exists and create it if it doesn't
+        if (-not (Test-Path -Path $folderPath)) {
+            New-Item -ItemType Directory -Path $folderPath | Out-Null
+        }
+
+        # Export user details to the Excel file
+        $users | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -FreezeTopRow
+
+        # Log a completion message
+        $message = "Report for $ApplianceFQDN completed."
+        Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+
     } catch {
         # If a connection already exists, log a message and continue
         if ($_.Exception.Message -like "*already connected*") {
