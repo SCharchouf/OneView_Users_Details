@@ -66,8 +66,8 @@ Function Connect-OneViewAppliance {
 $baseURL = "https://$ApplianceFQDN/rest"
 
 # Get the session ID
-$session = Invoke-RestMethod -Uri "$baseURL/login-sessions" -Method Post -Body $credential
-$sessionID = $session.sessionID
+$response = Invoke-WebRequest -Uri "$baseURL/login-sessions" -Method Post -Body $credential -SkipCertificateCheck
+$sessionID = ($response.Content | ConvertFrom-Json).sessionID
 
 # Define the headers for the requests
 $headers = @{
@@ -80,7 +80,8 @@ $headers = @{
 $userWithScopes = @()
 
 # Get all users
-$users = Invoke-RestMethod -Uri "$baseURL/users" -Method Get -Headers $headers
+$users = Invoke-WebRequest -Uri "$baseURL/users" -Method Get -Headers $headers -SkipCertificateCheck
+$users = $users.Content | ConvertFrom-Json
 
 # Loop through each user and get details
 foreach ($user in $users.members) {
