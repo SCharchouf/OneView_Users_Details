@@ -62,41 +62,42 @@ Function Connect-OneViewAppliance {
         $message = "Generating report for $ApplianceFQDN..."
         Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
 
-        # Define the base URL for the HPE OneView REST API
-        $baseURL = "https://$ApplianceFQDN/rest"
+# Define the base URL for the HPE OneView REST API
+$baseURL = "https://$ApplianceFQDN/rest"
 
-        # Get the session ID
-        $session = Invoke-RestMethod -Uri "$baseURL/login-sessions" -Method Post -Body $credential
-        $sessionID = $session.sessionID
+# Get the session ID
+$session = Invoke-RestMethod -Uri "$baseURL/login-sessions" -Method Post -Body $credential
+$sessionID = $session.sessionID
 
-        # Define the headers for the requests
-        $headers = @{
-            "Auth"         = $sessionID
-            "Content-Type" = "application/json"
-        }
+# Define the headers for the requests
+$headers = @{
+    "Auth"         = $sessionID
+    "Content-Type" = "application/json"
+    "X-API-Version" = "4600"
+}
 
-        # Initialize an array to hold user details
-        $userWithScopes = @()
+# Initialize an array to hold user details
+$userWithScopes = @()
 
-        # Get all users
-        $users = Invoke-RestMethod -Uri "$baseURL/users" -Method Get -Headers $headers
+# Get all users
+$users = Invoke-RestMethod -Uri "$baseURL/users" -Method Get -Headers $headers
 
-        # Loop through each user and get details
-        foreach ($user in $users.members) {
-            # Combine user details (modify as needed)
-            $userDetail = New-Object PSObject
-            $userDetail | Add-Member -Type NoteProperty -Name FullName -Value $user.fullName
-            $userDetail | Add-Member -Type NoteProperty -Name UserName -Value $user.userName
-            $userDetail | Add-Member -Type NoteProperty -Name Enabled -Value $user.enabled
-            $userDetail | Add-Member -Type NoteProperty -Name RoleName -Value $user.roleName
+# Loop through each user and get details
+foreach ($user in $users.members) {
+    # Combine user details (modify as needed)
+    $userDetail = New-Object PSObject
+    $userDetail | Add-Member -Type NoteProperty -Name FullName -Value $user.fullName
+    $userDetail | Add-Member -Type NoteProperty -Name UserName -Value $user.userName
+    $userDetail | Add-Member -Type NoteProperty -Name Enabled -Value $user.enabled
+    $userDetail | Add-Member -Type NoteProperty -Name RoleName -Value $user.roleName
 
-            # Add the combined object to the array for further processing
-            $userWithScopes += $userDetail
-        }
+    # Add the combined object to the array for further processing
+    $userWithScopes += $userDetail
+}
 
-        # Define the path to the Excel file
-        $folderPath = Join-Path -Path $scriptPath -ChildPath "Reports"
-        $excelFilePath = Join-Path -Path $folderPath -ChildPath "Users_$ApplianceFQDN.xlsx"
+# Define the path to the Excel file
+$folderPath = Join-Path -Path $scriptPath -ChildPath "Reports"
+$excelFilePath = Join-Path -Path $folderPath -ChildPath "Users_$ApplianceFQDN.xlsx"
 
         # Check if the folder exists and create it if it doesn't
         if (-not (Test-Path -Path $folderPath)) {
