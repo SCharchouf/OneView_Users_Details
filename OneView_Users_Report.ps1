@@ -65,8 +65,11 @@ Function Connect-OneViewAppliance {
 # Define the base URL for the HPE OneView REST API
 $baseURL = "https://$ApplianceFQDN/rest"
 
+# Convert the credential object to a JSON string
+$jsonCredential = $credential | ConvertTo-Json
+
 # Get the session ID
-$response = Invoke-WebRequest -Uri "$baseURL/login-sessions" -Method Post -Body $credential -SkipCertificateCheck
+$response = Invoke-WebRequest -Uri "$baseURL/login-sessions" -Method Post -Body $jsonCredential -ContentType "application/json" -SkipCertificateCheck
 $sessionID = ($response.Content | ConvertFrom-Json).sessionID
 
 # Define the headers for the requests
@@ -82,6 +85,8 @@ $userWithScopes = @()
 # Get all users
 $users = Invoke-WebRequest -Uri "$baseURL/users" -Method Get -Headers $headers -SkipCertificateCheck
 $users = $users.Content | ConvertFrom-Json
+
+# Loop through each user and get details
 
 # Loop through each user and get details
 foreach ($user in $users.members) {
