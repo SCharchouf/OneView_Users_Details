@@ -4,7 +4,7 @@ $loggingFunctionsPath = Join-Path -Path $scriptPath -ChildPath "..\Logging_Funct
 $ScriptVersion = "1.0"
 function Import-ModulesIfNotExists {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string[]]$ModuleNames
     )
     # Start logging
@@ -18,15 +18,18 @@ function Import-ModulesIfNotExists {
                 if (-not (Get-Module -Name $ModuleName)) {
                     $message = "`tFailed to import module '$ModuleName'."
                     Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
-                } else {
+                }
+                else {
                     $message = "`tModule '$ModuleName' imported successfully."
                     Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
                 }
-            } else {
+            }
+            else {
                 $message = "`tModule '$ModuleName' is already imported."
                 Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
             }
-        } else {
+        }
+        else {
             $message = "`tModule '$ModuleName' does not exist."
             Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
         }
@@ -59,20 +62,33 @@ Function Connect-OneViewAppliance {
         $message = "Generating report for $ApplianceFQDN..."
         Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
 
+        # Define the base URL for the HPE OneView REST API
+        $baseURL = "https://$ApplianceFQDN/rest"
+
+        # Get the session ID
+        $session = Invoke-RestMethod -Uri "$baseURL/login-sessions" -Method Post -Body $credential
+        $sessionID = $session.sessionID
+
+        # Define the headers for the requests
+        $headers = @{
+            "Auth"         = $sessionID
+            "Content-Type" = "application/json"
+        }
+
         # Initialize an array to hold user details
         $userWithScopes = @()
 
         # Get all users
-        $users = Get-OVUser
+        $users = Invoke-RestMethod -Uri "$baseURL/users" -Method Get -Headers $headers
 
-        # Loop through each user and get assigned scopes
-        foreach ($user in $users) {
-            
-            # Combine user details and scopes (modify as needed)
+        # Loop through each user and get details
+        foreach ($user in $users.members) {
+            # Combine user details (modify as needed)
             $userDetail = New-Object PSObject
+            $userDetail | Add-Member -Type NoteProperty -Name FullName -Value $user.fullName
             $userDetail | Add-Member -Type NoteProperty -Name UserName -Value $user.userName
-            $userDetail | Add-Member -Type NoteProperty -Name Roles -Value ($user.roles -join ', ')
-            $userDetail | Add-Member -Type NoteProperty -Name Scopes -Value ($user.scopes -join ', ')
+            $userDetail | Add-Member -Type NoteProperty -Name Enabled -Value $user.enabled
+            $userDetail | Add-Member -Type NoteProperty -Name RoleName -Value $user.roleName
 
             # Add the combined object to the array for further processing
             $userWithScopes += $userDetail
@@ -87,7 +103,8 @@ Function Connect-OneViewAppliance {
             New-Item -ItemType Directory -Path $folderPath | Out-Null
             $message = "Reports folder does not exist. Created new folder: $folderPath"
             Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
-        } else {
+        }
+        else {
             $message = "Reports folder already exists: $folderPath"
             Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
         }
@@ -99,12 +116,14 @@ Function Connect-OneViewAppliance {
         $message = "Report for $ApplianceFQDN completed."
         Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
 
-    } catch {
+    }
+    catch {
         # If a connection already exists, log a message and continue
         if ($_.Exception.Message -like "*already connected*") {
             $message = "Already connected to : $ApplianceFQDN"
             Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
-        } else {
+        }
+        else {
             # If the connection fails for any other reason, log an error message
             $message = "Failed to connect to : $ApplianceFQDN. Error details: $($_.Exception.Message)"
             Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
@@ -122,12 +141,14 @@ if (!(Test-Path -Path $credentialFolder)) {
 if (Test-Path -Path $credentialFile) {
     try {
         $credential = Import-Clixml -Path $credentialFile
-    } catch {
+    }
+    catch {
         Write-Host "Error loading credential file. Please enter your credentials."
         $credential = Get-Credential -Message "Enter your username and password"
         $credential | Export-Clixml -Path $credentialFile
     }
-} else {
+}
+else {
     # If the credential file doesn't exist, ask for the username and password and store them in the credential file
     $credential = Get-Credential -Message "Enter your username and password"
     $credential | Export-Clixml -Path $credentialFile
