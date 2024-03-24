@@ -65,8 +65,17 @@ Function Connect-OneViewAppliance {
 # Define the base URL for the HPE OneView REST API
 $baseURL = "https://$ApplianceFQDN/rest"
 
-# Convert the credential object to a JSON string
-$jsonCredential = $credential | ConvertTo-Json
+# Get the credential object
+$credential = Get-Credential
+
+# Convert the username and password from the credential object to a hashtable
+$credentialHashtable = @{
+    "userName" = $credential.UserName
+    "password" = $credential.GetNetworkCredential().Password
+}
+
+# Convert the hashtable to a JSON string
+$jsonCredential = $credentialHashtable | ConvertTo-Json
 
 # Get the session ID
 $response = Invoke-WebRequest -Uri "$baseURL/login-sessions" -Method Post -Body $jsonCredential -ContentType "application/json" -SkipCertificateCheck
