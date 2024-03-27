@@ -33,21 +33,21 @@ function Import-ModulesIfNotExists {
                 Import-Module $ModuleName
                 if (-not (Get-Module -Name $ModuleName)) {
                     $message = "`tFailed to import module '$ModuleName'."
-                    Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
+                    Write-Log -Message $message -Level "Error" -Path $script:LogPath
                 }
                 else {
                     $message = "`tModule '$ModuleName' imported successfully."
-                    Write-Log -Message $message -Level "OK" -sFullPath $global:sFullPath
+                    Write-Log -Message $message -Level "OK" -Path $script:LogPath
                 }
             }
             else {
                 $message = "`tModule '$ModuleName' is already imported."
-                Write-Log -Message $message -Level "Info" -sFullPath $global:sFullPath
+                Write-Log -Message $message -Level "Info" -Path $script:LogPath
             }
         }
         else {
             $message = "`tModule '$ModuleName' does not exist."
-            Write-Log -Message $message -Level "Error" -sFullPath $global:sFullPath
+            Write-Log -Message $message -Level "Error" -Path $script:LogPath
         }
     }
 }
