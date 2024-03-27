@@ -61,3 +61,6 @@ $csvFilePath = Join-Path -Path $scriptDirectory -ChildPath $csvFileName
 $credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "credential"
 # Define the path to the credential file
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
+# Call Complete-Logging at the end of the script
+Complete-Logging -LogPath $script:LogPath
+
