@@ -1,3 +1,7 @@
+# Define the script version
+$ScriptVersion = "1.0"
+# Retrieve the script name dynamically
+$ScriptName = $MyInvocation.MyCommand.Name
 # Get the directory from which the script is being executed
 $scriptDirectory = $PSScriptRoot
 
@@ -15,8 +19,6 @@ if (Test-Path -Path $loggingFunctionsPath) {
 } else {
     Write-Host "The logging functions script could not be found at: $loggingFunctionsPath"
 }
-# Define the script version
-$ScriptVersion = "1.1"
 # Define the function to import required modules if they are not already imported
 function Import-ModulesIfNotExists {
     param (
