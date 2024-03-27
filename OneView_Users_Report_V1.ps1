@@ -61,6 +61,9 @@ $csvFilePath = Join-Path -Path $scriptDirectory -ChildPath $csvFileName
 $credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "credential"
 # Define the path to the credential file
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
+# Just before calling Complete-Logging
+$endTime = Get-Date
+$totalRuntime = $endTime - $startTime
 # Call Complete-Logging at the end of the script
-Complete-Logging -LogPath $script:LogPath
+Complete-Logging -LogPath $script:LogPath -TotalRuntime $totalRuntime
 
