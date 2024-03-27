@@ -1,8 +1,11 @@
 # Get the directory from which the script is being executed
 $scriptDirectory = $PSScriptRoot
 
+# Move up one level from the current script directory and then into the Logging_Function directory
+$loggingFunctionsDirectory = Join-Path -Path $scriptDirectory -ChildPath "..\Logging_Function"
+
 # Construct the path to the Logging_Functions.ps1 script
-$loggingFunctionsPath = Join-Path -Path $scriptDirectory -ChildPath "Logging_Function\Logging_Functions.ps1"
+$loggingFunctionsPath = Join-Path -Path $loggingFunctionsDirectory -ChildPath "Logging_Functions.ps1"
 
 # Check if the Logging_Functions.ps1 script exists
 if (Test-Path -Path $loggingFunctionsPath) {
