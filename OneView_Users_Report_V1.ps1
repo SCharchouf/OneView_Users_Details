@@ -65,5 +65,5 @@ $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
 # Call Complete-Logging at the end of the script
-Complete-Logging -LogPath $script:LogPath -ErrorCount $ErrorCount -WarningCount $WarningCount -TotalRuntime $totalRuntime -FinalStatus $FinalStatus
+Complete-Logging -LogPath $script:LogPath -ErrorCount $ErrorCount -WarningCount $WarningCount -TotalRuntime $totalRuntime
 
