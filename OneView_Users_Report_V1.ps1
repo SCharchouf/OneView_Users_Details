@@ -32,7 +32,7 @@ function Import-ModulesIfNotExists {
     $taskNumber = 1
 
     # Task 1: Checking required modules
-    Write-Log -Message "`n$($taskNumber). Checking required modules:`n" -Level "Info"
+    Write-Host "`n$($taskNumber). Checking required modules:`n" -ForegroundColor Cyan
     $taskNumber++
 
     $totalModules = $ModuleNames.Count
@@ -45,31 +45,32 @@ function Import-ModulesIfNotExists {
         try {
             # Check if the module is installed
             if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
-                Write-Log -Message "`t- Module '[$ModuleName]' is not installed." -Level "Error"
+                Write-Host "`t- Module '[$ModuleName]' is not installed." -ForegroundColor Red
+                Write-Log -Message "Module '[$ModuleName]' is not installed." -Level "Error" -NoConsoleOutput
                 continue
             }
 
             # Check if the module is already imported
             if (Get-Module -Name $ModuleName) {
-                Write-Log -Message "`t- Module '[$ModuleName]' is already imported." -Level "Info"
+                Write-Host "`t- Module '[$ModuleName]' is already imported." -ForegroundColor Yellow
+                Write-Log -Message "Module '[$ModuleName]' is already imported." -Level "Info" -NoConsoleOutput
                 continue
             }
 
             # Try to import the module
             Import-Module $ModuleName -ErrorAction Stop
-            Write-Log -Message "`t- Module '[$ModuleName]' imported successfully." -Level "OK"
+            Write-Host "`t- Module '[$ModuleName]' imported successfully." -ForegroundColor Green
+            Write-Log -Message "Module '[$ModuleName]' imported successfully." -Level "OK" -NoConsoleOutput
         }
         catch {
-            Write-Log -Message "`t- Failed to import module '[$ModuleName]': $_" -Level "Error"
+            Write-Host "`t- Failed to import module '[$ModuleName]': $_" -ForegroundColor Red
+            Write-Log -Message "Failed to import module '[$ModuleName]': $_" -Level "Error" -NoConsoleOutput
         }
 
         # Add a delay to slow down the progress bar
         Start-Sleep -Seconds 1
     }
-
-    Write-Log -Message "`n" -Level "Info"
 }
-
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
 # Create the full path to the CSV file
