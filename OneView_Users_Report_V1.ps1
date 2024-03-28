@@ -23,33 +23,43 @@ if (Test-Path -Path $loggingFunctionsPath) {
 function Import-ModulesIfNotExists {
     param (
         [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [string[]]$ModuleNames
     )
     # Start logging
     Start-Log -ScriptVersion $ScriptVersion -ScriptPath $PSCommandPath
-    # Get the log file path from the start-log function
-
     foreach ($ModuleName in $ModuleNames) {
-        if (Get-Module -ListAvailable -Name $ModuleName) {
-            if (-not (Get-Module -Name $ModuleName)) {
-                Import-Module $ModuleName
-                if (-not (Get-Module -Name $ModuleName)) {
-                    $message = "`tFailed to import module '$ModuleName'."
-                    Write-Log -Message $message -Level "Error"
-                }
-                else {
-                    $message = "`tModule '$ModuleName' imported successfully."
-                    Write-Log -Message $message -Level "OK"
-                }
+        try {
+            # Check if the module is installed
+            if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
+                Write-Host -NoNewline -ForegroundColor Red "Module '"
+                Write-Host -NoNewline -ForegroundColor Yellow "$ModuleName"
+                Write-Host -ForegroundColor Red "' is not installed."
+                Write-Log -Message "Module '$ModuleName' is not installed." -Level "Error"
+                continue
             }
-            else {
-                $message = "`tModule '$ModuleName' is already imported."
-                Write-Log -Message $message -Level "Info"
+
+            # Check if the module is already imported
+            if (Get-Module -Name $ModuleName) {
+                Write-Host -NoNewline -ForegroundColor Yellow "Module '"
+                Write-Host -NoNewline -ForegroundColor Green "$ModuleName"
+                Write-Host -ForegroundColor Yellow "' is already imported."
+                Write-Log -Message "Module '$ModuleName' is already imported." -Level "Info"
+                continue
             }
+
+            # Try to import the module
+            Import-Module $ModuleName -ErrorAction Stop
+            Write-Host -NoNewline -ForegroundColor Green "Module '"
+            Write-Host -NoNewline -ForegroundColor Yellow "$ModuleName"
+            Write-Host -ForegroundColor Green "' imported successfully."
+            Write-Log -Message "Module '$ModuleName' imported successfully." -Level "OK"
         }
-        else {
-            $message = "`tModule '$ModuleName' does not exist."
-            Write-Log -Message $message -Level "Error" -Path $script:LogPath
+        catch {
+            Write-Host -NoNewline -ForegroundColor Red "Failed to import module '"
+            Write-Host -NoNewline -ForegroundColor Yellow "$ModuleName"
+            Write-Host -ForegroundColor Red "': $_"
+            Write-Log -Message "Failed to import module '$ModuleName': $_" -Level "Error"
         }
     }
 }
