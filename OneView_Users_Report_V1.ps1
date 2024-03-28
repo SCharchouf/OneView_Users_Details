@@ -42,34 +42,32 @@ function Import-ModulesIfNotExists {
         $currentModuleNumber++
         Write-Progress -Activity "Checking required modules" -Status "$ModuleName" -PercentComplete ($currentModuleNumber / $totalModules * 100)
 
-        Write-Host "`t- Checking $ModuleName"
-
         try {
             # Check if the module is installed
             if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
-                Write-Log -Message "Module '[$ModuleName]' is not installed." -Level "Error"
+                Write-Log -Message "`t- Module '[$ModuleName]' is not installed." -Level "Error"
                 continue
             }
 
             # Check if the module is already imported
             if (Get-Module -Name $ModuleName) {
-                Write-Log -Message "Module '[$ModuleName]' is already imported." -Level "Info"
+                Write-Log -Message "`t- Module '[$ModuleName]' is already imported." -Level "Info"
                 continue
             }
 
             # Try to import the module
             Import-Module $ModuleName -ErrorAction Stop
-            Write-Log -Message "Module '[$ModuleName]' imported successfully." -Level "OK"
+            Write-Log -Message "`t- Module '[$ModuleName]' imported successfully." -Level "OK"
         }
         catch {
-            Write-Log -Message "Failed to import module '[$ModuleName]': $_" -Level "Error"
+            Write-Log -Message "`t- Failed to import module '[$ModuleName]': $_" -Level "Error"
         }
 
         # Add a delay to slow down the progress bar
         Start-Sleep -Seconds 1
     }
 
-    Write-Host "`n"
+    Write-Log -Message "`n" -Level "Info"
 }
 
 # Import the required modules
