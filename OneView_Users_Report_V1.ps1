@@ -33,6 +33,7 @@ function Import-ModulesIfNotExists {
 
     # Task 1: Checking required modules
     Write-Host "`n$($taskNumber). Checking required modules:`n" -ForegroundColor Cyan
+    Write-Log -Message "`n$($taskNumber). Checking required modules:`n" -Level "Info"
     $taskNumber++
 
     $totalModules = $ModuleNames.Count
@@ -41,6 +42,8 @@ function Import-ModulesIfNotExists {
     foreach ($ModuleName in $ModuleNames) {
         $currentModuleNumber++
         Write-Progress -Activity "Checking required modules" -Status "$ModuleName" -PercentComplete ($currentModuleNumber / $totalModules * 100)
+
+        Write-Host "`t- $ModuleName"
 
         try {
             # Check if the module is installed
@@ -69,6 +72,7 @@ function Import-ModulesIfNotExists {
 
     Write-Host "`n"
 }
+
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
 # Create the full path to the CSV file
