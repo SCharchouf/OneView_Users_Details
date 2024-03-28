@@ -28,8 +28,12 @@ function Import-ModulesIfNotExists {
     )
     # Start logging
     Start-Log -ScriptVersion $ScriptVersion -ScriptPath $PSCommandPath
-    # Add space before the progress bar
-    Write-Host "`nChecking required modules:`n"
+    # Initialize task counter
+    $taskNumber = 1
+
+    # Task 1: Checking required modules
+    Write-Host "`n$($taskNumber). Checking required modules:`n" -ForegroundColor Cyan
+    $taskNumber++
 
     $totalModules = $ModuleNames.Count
     $currentModuleNumber = 0
@@ -58,11 +62,13 @@ function Import-ModulesIfNotExists {
         catch {
             Write-Log -Message "Failed to import module '[$ModuleName]': $_" -Level "Error"
         }
+
+        # Add a delay to slow down the progress bar
+        Start-Sleep -Seconds 1
     }
 
     Write-Host "`n"
 }
-
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
 # Create the full path to the CSV file
