@@ -33,6 +33,7 @@ function Import-ModulesIfNotExists {
 
     # Task 1: Checking required modules
     Write-Host "`n$($taskNumber). Checking required modules:`n" -ForegroundColor Cyan
+    Write-Log -Message "Checking required modules." -Level "Info"
     $taskNumber++
 
     $totalModules = $ModuleNames.Count
@@ -45,25 +46,33 @@ function Import-ModulesIfNotExists {
         try {
             # Check if the module is installed
             if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
-                Write-Host "`t- Module '[$ModuleName]' is not installed." -ForegroundColor Red
+                Write-Host "`t- Module " -NoNewline
+                Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Red
+                Write-Host " is not installed." -ForegroundColor Red
                 Write-Log -Message "Module '[$ModuleName]' is not installed." -Level "Error" -NoConsoleOutput
                 continue
             }
 
             # Check if the module is already imported
             if (Get-Module -Name $ModuleName) {
-                Write-Host "`t- Module '[$ModuleName]' is already imported." -ForegroundColor Yellow
+                Write-Host "`t- Module " -NoNewline
+                Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Yellow
+                Write-Host " is already imported." -ForegroundColor Yellow
                 Write-Log -Message "Module '[$ModuleName]' is already imported." -Level "Info" -NoConsoleOutput
                 continue
             }
 
             # Try to import the module
             Import-Module $ModuleName -ErrorAction Stop
-            Write-Host "`t- Module '[$ModuleName]' imported successfully." -ForegroundColor Green
+            Write-Host "`t- Module " -NoNewline
+            Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Green
+            Write-Host " imported successfully." -ForegroundColor Green
             Write-Log -Message "Module '[$ModuleName]' imported successfully." -Level "OK" -NoConsoleOutput
         }
         catch {
-            Write-Host "`t- Failed to import module '[$ModuleName]': $_" -ForegroundColor Red
+            Write-Host "`t- Failed to import module " -NoNewline
+            Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Red
+            Write-Host ": $_" -ForegroundColor Red
             Write-Log -Message "Failed to import module '[$ModuleName]': $_" -Level "Error" -NoConsoleOutput
         }
 
@@ -71,6 +80,7 @@ function Import-ModulesIfNotExists {
         Start-Sleep -Seconds 1
     }
 }
+
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
 # Create the full path to the CSV file
