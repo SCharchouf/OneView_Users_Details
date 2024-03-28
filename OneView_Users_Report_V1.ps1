@@ -32,7 +32,6 @@ function Import-ModulesIfNotExists {
     $taskNumber = 1
 
     # Task 1: Checking required modules
-    Write-Host "`n$($taskNumber). Checking required modules:`n" -ForegroundColor Cyan
     Write-Log -Message "`n$($taskNumber). Checking required modules:`n" -Level "Info"
     $taskNumber++
 
@@ -43,7 +42,7 @@ function Import-ModulesIfNotExists {
         $currentModuleNumber++
         Write-Progress -Activity "Checking required modules" -Status "$ModuleName" -PercentComplete ($currentModuleNumber / $totalModules * 100)
 
-        Write-Host "`t- $ModuleName"
+        Write-Host "`t- Checking $ModuleName"
 
         try {
             # Check if the module is installed
