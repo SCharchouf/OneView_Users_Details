@@ -103,8 +103,12 @@ function Import-ModulesIfNotExists {
 }
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
+# Define the CSV file name
+$csvFileName = ".\Appliances_List\Appliances_List.csv"
+# Define the parent directory of the CSV file
+$parentDirectory = Split-Path -Path $scriptDirectory -Parent
 # Create the full path to the CSV file
-$csvFilePath = Join-Path -Path $scriptDirectory -ChildPath $csvFileName
+$csvFilePath = Join-Path -Path $parentDirectory -ChildPath $csvFileName
 # Define the path to the credential folder
 $credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "credential"
 # Define the path to the credential file
@@ -122,7 +126,6 @@ else {
     Write-Host "`t• Failed to import the CSV file." -ForegroundColor Red
     Write-Log -Message "Failed to import the CSV file." -Level "Error" -NoConsoleOutput
 }
-
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
