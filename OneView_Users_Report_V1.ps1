@@ -27,11 +27,11 @@ if (Test-Path -Path $loggingFunctionsPath) {
     # Dot-source the Logging_Functions.ps1 script
     . $loggingFunctionsPath
     # Write a message to the console indicating that the logging functions have been loaded
-    Write-Host "`tLogging functions have been loaded." -ForegroundColor Green
+    Write-Host "`t• Logging functions have been loaded." -ForegroundColor Green
 }
 else {
     # Write an error message to the console indicating that the logging functions script could not be found
-    Write-Host "The logging functions script could not be found at: $loggingFunctionsPath" -ForegroundColor Red
+    Write-Host "`t• The logging functions script could not be found at: $loggingFunctionsPath" -ForegroundColor Red
     # Stop the script execution
     exit
 }
