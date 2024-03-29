@@ -151,12 +151,11 @@ if (Test-Path -Path $credentialFile) {
     # Save the credentials to the file for future use
     $credential | Export-Clixml -Path $credentialFile
 }
-
 # Loop through each appliance and connect
 foreach ($appliance in $Appliances) {
     try {
         # Use the Connect-OVMgmt cmdlet to connect to the appliance
-        Connect-OVMgmt -Hostname $appliance.FQDN -Credential $credential
+        $null = Connect-OVMgmt -Hostname $appliance.FQDN -Credential $credential -ErrorAction Stop
 
         # Log the successful connection
         Write-Log -Message "Successfully connected to appliance: $($appliance.FQDN)" -Level "OK" -NoConsoleOutput
