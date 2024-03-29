@@ -19,7 +19,6 @@ Last Modified : $((Get-Item $PSCommandPath).LastWriteTime.ToString("dd/MM/yyyy")
 $consoleWidth = $Host.UI.RawUI.WindowSize.Width
 $line = "─" * ($consoleWidth - 2)
 Write-Host "+$line+" -ForegroundColor Cyan
-
 # Split the header into lines and display each part in different colors
 $HeaderMainScript -split "`n" | ForEach-Object {
     $parts = $_ -split ": ", 2
@@ -117,21 +116,62 @@ $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 Write-Host "`n$($taskNumber). Importing the CSV file:`n" -ForegroundColor Magenta
 # Import Appliances list from CSV file
 $Appliances = Import-Csv -Path $csvFilePath
-
 # Confirm that the CSV file was imported successfully
 if ($Appliances) {
     # Get the total number of appliances
     $totalAppliances = $Appliances.Count
-
+    # Log the total number of appliances
+    Write-Log -Message "There are $totalAppliances appliances in the CSV file." -Level "Info" -NoConsoleOutput
+    # Display if the CSV file was imported successfully
     Write-Host "`t• The CSV file was imported successfully." -ForegroundColor Green
+    # Display the total number of appliances
     Write-Host "`t• Total number of appliances:" -NoNewline -ForegroundColor Gray
     Write-Host " $totalAppliances" -NoNewline -ForegroundColor Cyan
     Write-Host "" # This is to add a newline after the above output
+    # Log the successful import of the CSV file
     Write-Log -Message "The CSV file was imported successfully." -Level "OK" -NoConsoleOutput
 }
 else {
+    # Display an error message if the CSV file failed to import
     Write-Host "`t• Failed to import the CSV file." -ForegroundColor Red
+    # Log the failure to import the CSV file
     Write-Log -Message "Failed to import the CSV file." -Level "Error" -NoConsoleOutput
+}
+# Increment $script:taskNumber after the function call
+$script:taskNumber++
+# Third Task : Connect to each OneView appliance and retrieve the user information
+# Check if the credential file exists
+if (Test-Path -Path $credentialFile) {
+    # Import the credentials from the file
+    $credential = Import-Clixml -Path $credentialFile
+} else {
+    # Ask the user for credentials
+    $credential = Get-Credential -Message "Enter your HPE OneView credentials."
+
+    # Save the credentials to the file for future use
+    $credential | Export-Clixml -Path $credentialFile
+}
+
+# Loop through each appliance and connect
+foreach ($appliance in $Appliances) {
+    try {
+        # Use the Connect-OVMgmt cmdlet to connect to the appliance
+        Connect-OVMgmt -Hostname $appliance.FQDN -Credential $credential
+
+        # Log the successful connection
+        Write-Log -Message "Successfully connected to appliance: $($appliance.FQDN)" -Level "OK" -NoConsoleOutput
+
+        # Display the successful connection in the console
+        Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
+        Write-Host "$($appliance.FQDN)" -ForegroundColor Cyan
+    }
+    catch {
+        # Log the failed connection
+        Write-Log -Message "Failed to connect to appliance: $($appliance.FQDN). Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
+
+        # Display the failed connection in the console
+        Write-Host "`t• Failed to connect to appliance: $($appliance.FQDN). Error: $($_.Exception.Message)" -ForegroundColor Red
+    }
 }
 # Just before calling Complete-Logging
 $endTime = Get-Date
