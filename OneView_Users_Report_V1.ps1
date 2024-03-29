@@ -117,9 +117,16 @@ $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 Write-Host "`n$($taskNumber). Importing the CSV file:`n" -ForegroundColor Magenta
 # Import Appliances list from CSV file
 $Appliances = Import-Csv -Path $csvFilePath
+
 # Confirm that the CSV file was imported successfully
 if ($Appliances) {
+    # Get the total number of appliances
+    $totalAppliances = $Appliances.Count
+
     Write-Host "`t• The CSV file was imported successfully." -ForegroundColor Green
+    Write-Host "`t• Total number of appliances:" -NoNewline -ForegroundColor Gray
+    Write-Host " $totalAppliances" -NoNewline -ForegroundColor Cyan
+    Write-Host "" # This is to add a newline after the above output
     Write-Log -Message "The CSV file was imported successfully." -Level "OK" -NoConsoleOutput
 }
 else {
