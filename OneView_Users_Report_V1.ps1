@@ -42,6 +42,8 @@ else {
     # Stop the script execution
     exit
 }
+    # Initialize task counter
+    $script:taskNumber = 1
 # Define the function to import required modules if they are not already imported
 function Import-ModulesIfNotExists {
     param (
@@ -51,14 +53,12 @@ function Import-ModulesIfNotExists {
     )
     # Start logging
     Start-Log -ScriptVersion $ScriptVersion -ScriptPath $PSCommandPath
-    # Initialize task counter
-    $taskNumber = 1
     # Task 1: Checking required modules
     Write-Host "`n$($taskNumber). Checking required modules:`n" -ForegroundColor Magenta
     # Log the task
     Write-Log -Message "Checking required modules." -Level "Info" -NoConsoleOutput
-    # Increment the task number
-    $taskNumber++
+    # Increment $script:taskNumber after the function call
+    $script:taskNumber++
     # Total number of modules to check
     $totalModules = $ModuleNames.Count
     # Initialize the current module counter
@@ -100,8 +100,6 @@ function Import-ModulesIfNotExists {
         # Add a delay to slow down the progress bar
         Start-Sleep -Seconds 1
     }
-    # Add a line of separators for clarity
-    Write-Host "+$line+" -ForegroundColor Cyan
 }
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
@@ -118,11 +116,11 @@ $Appliances = Import-Csv -Path $csvFilePath
 # Confirm that the CSV file was imported successfully
 if ($Appliances) {
     Write-Host "`t• The CSV file was imported successfully." -ForegroundColor Green
-    Write-Log -Message "The CSV file was imported successfully." -Level "OK"
+    Write-Log -Message "The CSV file was imported successfully." -Level "OK" -NoConsoleOutput
 }
 else {
     Write-Host "`t• Failed to import the CSV file." -ForegroundColor Red
-    Write-Log -Message "Failed to import the CSV file." -Level "Error"
+    Write-Log -Message "Failed to import the CSV file." -Level "Error" -NoConsoleOutput
 }
 
 # Just before calling Complete-Logging
