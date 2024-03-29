@@ -100,6 +100,8 @@ function Import-ModulesIfNotExists {
         # Add a delay to slow down the progress bar
         Start-Sleep -Seconds 1
     }
+    # Add a line of separators for clarity
+    Write-Host "+$line+" -ForegroundColor Cyan
 }
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
