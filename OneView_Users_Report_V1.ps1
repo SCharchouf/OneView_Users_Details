@@ -4,19 +4,17 @@ $ScriptVersion = "1.0"
 $ScriptName = $MyInvocation.MyCommand.Name
 # Get the directory from which the script is being executed
 $scriptDirectory = $PSScriptRoot
-
 # Move up one level from the current script directory and then into the Logging_Function directory
 $loggingFunctionsDirectory = Join-Path -Path $scriptDirectory -ChildPath "..\Logging_Function"
-
 # Construct the path to the Logging_Functions.ps1 script
 $loggingFunctionsPath = Join-Path -Path $loggingFunctionsDirectory -ChildPath "Logging_Functions.ps1"
-
 # Check if the Logging_Functions.ps1 script exists
 if (Test-Path -Path $loggingFunctionsPath) {
     # Dot-source the Logging_Functions.ps1 script
     . $loggingFunctionsPath
     Write-Host "Logging functions have been loaded."
-} else {
+}
+else {
     Write-Host "The logging functions script could not be found at: $loggingFunctionsPath"
 }
 # Define the function to import required modules if they are not already imported
@@ -46,7 +44,7 @@ function Import-ModulesIfNotExists {
         try {
             # Check if the module is installed
             if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
-                Write-Host "`t- Module " -NoNewline
+                Write-Host "`t➡️ Module " -NoNewline
                 Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Red
                 Write-Host " is not installed." -ForegroundColor Red
                 Write-Log -Message "Module '[$ModuleName]' is not installed." -Level "Error" -NoConsoleOutput
@@ -55,7 +53,7 @@ function Import-ModulesIfNotExists {
 
             # Check if the module is already imported
             if (Get-Module -Name $ModuleName) {
-                Write-Host "`t- Module " -NoNewline
+                Write-Host "`t➡️ Module " -NoNewline
                 Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Yellow
                 Write-Host " is already imported." -ForegroundColor Yellow
                 Write-Log -Message "Module '[$ModuleName]' is already imported." -Level "Info" -NoConsoleOutput
@@ -64,13 +62,13 @@ function Import-ModulesIfNotExists {
 
             # Try to import the module
             Import-Module $ModuleName -ErrorAction Stop
-            Write-Host "`t- Module " -NoNewline
+            Write-Host "`t➡️ Module " -NoNewline
             Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Green
             Write-Host " imported successfully." -ForegroundColor Green
             Write-Log -Message "Module '[$ModuleName]' imported successfully." -Level "OK" -NoConsoleOutput
         }
         catch {
-            Write-Host "`t- Failed to import module " -NoNewline
+            Write-Host "`t➡️ Failed to import module " -NoNewline
             Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Red
             Write-Host ": $_" -ForegroundColor Red
             Write-Log -Message "Failed to import module '[$ModuleName]': $_" -Level "Error" -NoConsoleOutput
@@ -80,7 +78,6 @@ function Import-ModulesIfNotExists {
         Start-Sleep -Seconds 1
     }
 }
-
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
 # Create the full path to the CSV file
