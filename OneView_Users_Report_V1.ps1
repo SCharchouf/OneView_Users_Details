@@ -111,6 +111,20 @@ $csvFilePath = Join-Path -Path $scriptDirectory -ChildPath $csvFileName
 $credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "credential"
 # Define the path to the credential file
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
+# Second Task import the CSV file
+Write-Host "`n$($taskNumber). Importing the CSV file:`n" -ForegroundColor Magenta
+# Import Appliances list from CSV file
+$Appliances = Import-Csv -Path $csvFilePath
+# Confirm that the CSV file was imported successfully
+if ($Appliances) {
+    Write-Host "`t• The CSV file was imported successfully." -ForegroundColor Green
+    Write-Log -Message "The CSV file was imported successfully." -Level "OK"
+}
+else {
+    Write-Host "`t• Failed to import the CSV file." -ForegroundColor Red
+    Write-Log -Message "Failed to import the CSV file." -Level "Error"
+}
+
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
