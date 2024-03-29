@@ -10,22 +10,22 @@ $loggingFunctionsDirectory = Join-Path -Path $scriptDirectory -ChildPath "..\Log
 $loggingFunctionsPath = Join-Path -Path $loggingFunctionsDirectory -ChildPath "Logging_Functions.ps1"
 # Script Header main script
 # Create the header information string
-    $HeaderMainScript = @"
+$HeaderMainScript = @"
 Author: Your Name
 Description: This script does amazing things!
 Created: $(Get-Date -Format "dd/MM/yyyy")
 Last Modified: $((Get-Item $PSCommandPath).LastWriteTime.ToString("dd/MM/yyyy"))
 "@
 
-    # Display the header information in the console with a design
-    $consoleWidth = $Host.UI.RawUI.WindowSize.Width
-    $line = "─" * ($consoleWidth - 2)
-    Write-Host "+$line+" -ForegroundColor Cyan
-    $HeaderMainScript -split "`n" | ForEach-Object { Write-Host "`t $_" -ForegroundColor Green }
-    Write-Host "+$line+" -ForegroundColor Cyan
+# Display the header information in the console with a design
+$consoleWidth = $Host.UI.RawUI.WindowSize.Width
+$line = "─" * ($consoleWidth - 2)
+Write-Host "+$line+" -ForegroundColor Cyan
+$HeaderMainScript -split "`n" | ForEach-Object { Write-Host "`t $_" -ForegroundColor Green }
+Write-Host "+$line+" -ForegroundColor Cyan
 
-    # Return the header information string
-    return $HeaderMainScript
+# Return the header information string
+return $HeaderMainScript
 # Check if the Logging_Functions.ps1 script exists
 if (Test-Path -Path $loggingFunctionsPath) {
     # Dot-source the Logging_Functions.ps1 script
