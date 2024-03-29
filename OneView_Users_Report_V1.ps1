@@ -24,9 +24,9 @@ Write-Host "+$line+" -ForegroundColor Cyan
 $HeaderMainScript -split "`n" | ForEach-Object {
     $parts = $_ -split ": ", 2
     Write-Host "`t" -NoNewline
-    Write-Host $parts[0] -NoNewline -ForegroundColor Gray
+    Write-Host $parts[0] -NoNewline -ForegroundColor DarkGray
     Write-Host ": " -NoNewline
-    Write-Host $parts[1] -ForegroundColor DarkMagenta
+    Write-Host $parts[1] -ForegroundColor Cyan
 }
 Write-Host "+$line+" -ForegroundColor Cyan
 # Check if the Logging_Functions.ps1 script exists
