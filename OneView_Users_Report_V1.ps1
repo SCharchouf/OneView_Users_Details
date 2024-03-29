@@ -8,20 +8,24 @@ $scriptDirectory = $PSScriptRoot
 $loggingFunctionsDirectory = Join-Path -Path $scriptDirectory -ChildPath "..\Logging_Function"
 # Construct the path to the Logging_Functions.ps1 script
 $loggingFunctionsPath = Join-Path -Path $loggingFunctionsDirectory -ChildPath "Logging_Functions.ps1"
-# Script Header
-# Get the width of the console window
-$consoleWidth = $host.UI.RawUI.WindowSize.Width
-# Create a string of "-" characters that is as long as the console is wide
-$line = "─" * ($consoleWidth - 1)
-# Script Header
-Write-Host "`n$line" -ForegroundColor Cyan
-# Write the script name, version, description, author, and creation date to the console
-Write-Host "`t• Author: Your Name" -ForegroundColor Gray
-Write-Host "`t• Version: $ScriptVersion" -ForegroundColor Gray
-Write-Host "`t• Description: This script does amazing things!" -ForegroundColor Gray
-Write-Host "`t• Created: $(Get-Date -Format "dd/MM/yyyy")"
-Write-Host "`t• Last Modified: $((Get-Item $PSCommandPath).LastWriteTime.ToString("dd/MM/yyyy"))"
-Write-Host "$line" -ForegroundColor Cyan
+# Script Header main script
+# Create the header information string
+    $HeaderMainScript = @"
+Author: Your Name
+Description: This script does amazing things!
+Created: $(Get-Date -Format "dd/MM/yyyy")
+Last Modified: $((Get-Item $PSCommandPath).LastWriteTime.ToString("dd/MM/yyyy"))
+"@
+
+    # Display the header information in the console with a design
+    $consoleWidth = $Host.UI.RawUI.WindowSize.Width
+    $line = "─" * ($consoleWidth - 2)
+    Write-Host "+$line+" -ForegroundColor Cyan
+    $HeaderMainScript -split "`n" | ForEach-Object { Write-Host "`t $_" -ForegroundColor Green }
+    Write-Host "+$line+" -ForegroundColor Cyan
+
+    # Return the header information string
+    return $HeaderMainScript
 # Check if the Logging_Functions.ps1 script exists
 if (Test-Path -Path $loggingFunctionsPath) {
     # Dot-source the Logging_Functions.ps1 script
