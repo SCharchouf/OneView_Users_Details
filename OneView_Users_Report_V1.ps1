@@ -21,7 +21,7 @@ Write-Host "`tVersion: $ScriptVersion" -ForegroundColor Gray
 Write-Host "`tDescription: This script does amazing things!" -ForegroundColor Gray
 Write-Host "`tCreated: $(Get-Date -Format "dd/MM/yyyy")"
 Write-Host "`tLast Modified: $((Get-Item $PSCommandPath).LastWriteTime.ToString("dd/MM/yyyy"))"
-Write-Host "$line`n" -ForegroundColor Cyan
+Write-Host "$line" -ForegroundColor Cyan
 # Check if the Logging_Functions.ps1 script exists
 if (Test-Path -Path $loggingFunctionsPath) {
     # Dot-source the Logging_Functions.ps1 script
