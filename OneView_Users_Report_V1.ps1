@@ -141,36 +141,24 @@ else {
 }
 # Increment $script:taskNumber after the function call
 $script:taskNumber++
-# Third Task : Connect to each OneView appliance and retrieve the user information
-Write-Host "`n$($taskNumber). Connecting to each OneView appliance:`n" -ForegroundColor Magenta
-# Check if the credential file exists
-if (Test-Path -Path $credentialFile) {
-    # Import the credentials from the file
-    $credential = Import-Clixml -Path $credentialFile
+# Third Task : Check for existing sessions 
+$existingSessions = $ConnectedSessions
+
+if ($existingSessions) {
+    Write-Host "`t• Existing sessions found: $($existingSessions.Count)" -ForegroundColor Yellow
+    Write-Log -Message "Existing sessions found: $($existingSessions.Count)" -Level "Info" -NoConsoleOutput
+
+    # Disconnect all existing sessions
+    $existingSessions | ForEach-Object {
+        Disconnect-OVMgmt -Hostname $_.Hostname
+    }
+
+    Write-Host "`t• All existing sessions have been disconnected." -ForegroundColor Green
+    Write-Log -Message "All existing sessions have been disconnected." -Level "OK" -NoConsoleOutput
 }
 else {
-    # Ask the user for credentials
-    $credential = Get-Credential -Message "Enter your HPE OneView credentials."
-
-    # Save the credentials to the file for future use
-    $credential | Export-Clixml -Path $credentialFile
-}
-# Check if there are any existing sessions to any OneView appliance and disconnect them if found
-if ($ConnectedSessions) {
-    # Log that there are already connected sessions
-    Write-Log -Message "Existing sessions found. Disconnecting all sessions." -Level "Info" -NoConsoleOutput
-
-    # Display that there are already connected sessions in the console
-    Write-Host "`t• Existing sessions found. Disconnecting all sessions." -ForegroundColor Yellow
-
-    # Disconnect all existing sessions and suppress the output
-    $null = $ConnectedSessions | Disconnect-OVMgmt
-
-    # Log that all sessions have been disconnected
-    Write-Log -Message "All existing sessions have been disconnected." -Level "Info" -NoConsoleOutput
-
-    # Display that all sessions have been disconnected in the console
-    Write-Host "`t• All existing sessions have been disconnected." -ForegroundColor Green
+    Write-Host "`t• No existing sessions found." -ForegroundColor Green
+    Write-Log -Message "No existing sessions found." -Level "Info" -NoConsoleOutput
 }
 # Just before calling Complete-Logging
 $endTime = Get-Date
