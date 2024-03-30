@@ -127,7 +127,7 @@ if ($Appliances) {
     # Display if the CSV file was imported successfully
     Write-Host "`t• The CSV file was imported successfully." -ForegroundColor Green
     # Display the total number of appliances
-    Write-Host "`t• Total number of appliances:" -NoNewline -ForegroundColor Gray
+    Write-Host "`t• Total number of appliances:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $totalAppliances" -NoNewline -ForegroundColor Cyan
     Write-Host "" # This is to add a newline after the above output
     # Log the successful import of the CSV file
@@ -141,7 +141,8 @@ else {
 }
 # Increment $script:taskNumber after the function call
 $script:taskNumber++
-# Third Task : Check for existing sessions 
+# Third Task : Check for existing sessions
+Write-Host "`n$($taskNumber). Check for existing sessions:`n" -ForegroundColor Magenta 
 $existingSessions = $ConnectedSessions
 
 if ($existingSessions) {
@@ -160,6 +161,46 @@ else {
     Write-Host "`t• No existing sessions found." -ForegroundColor Green
     Write-Log -Message "No existing sessions found." -Level "Info" -NoConsoleOutput
 }
+# Increment $script:taskNumber after the function call
+$script:taskNumber++
+# Fourth Task : Loop through each appliance
+Write-Host "`n$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Magenta 
+# Create an empty array to store the user details
+$userDetails = @()
+
+# Loop through each appliance
+foreach ($appliance in $Appliances) {
+    # Convert the FQDN to uppercase
+    $fqdn = $appliance.FQDN.ToUpper()
+
+    try {
+        # Use the Connect-OVMgmt cmdlet to connect to the appliance
+        Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
+
+        Write-Host "`t• Successfully connected to $fqdn and collecting users details." -ForegroundColor Green
+        Write-Log -Message "Successfully connected to $fqdn and collecting users details." -Level "OK" -NoConsoleOutput
+
+        # Get local users and LDAP groups from the current session
+        $localUsers = Get-OVUser
+        $ldapGroups = Get-OVLdapGroup
+
+        # Add the user details to the array
+        $userDetails += $localUsers, $ldapGroups
+
+        # Disconnect from the appliance
+        Disconnect-OVMgmt -Hostname $fqdn
+    }
+    catch {
+        # Log the failed connection
+        Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
+    }
+}
+
+# Define the path to the Excel file in the Reports directory
+$excelFilePath = Join-Path -Path $baseReportsDir -ChildPath 'UserDetails.xlsx'
+
+# Export the user details to an Excel file
+$userDetails | Export-Excel -Path $excelFilePath
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
