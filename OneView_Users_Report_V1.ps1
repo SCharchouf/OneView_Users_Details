@@ -153,23 +153,28 @@ if (Test-Path -Path $credentialFile) {
 }
 # Loop through each appliance and connect
 foreach ($appliance in $Appliances) {
-    try {
-        # Use the Connect-OVMgmt cmdlet to connect to the appliance
-        $null = Connect-OVMgmt -Hostname $appliance.FQDN -Credential $credential -ErrorAction Stop
+    # Convert the FQDN to uppercase
+    $fqdn = $appliance.FQDN.ToUpper()
 
-        # Log the successful connection
-        Write-Log -Message "Successfully connected to appliance: $($appliance.FQDN)" -Level "OK" -NoConsoleOutput
+    # Check if a connection to the appliance already exists
+    $existingConnection = Get-OVConnection | Where-Object { $_.HostName -eq $fqdn }
 
-        # Display the successful connection in the console
-        Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
-        Write-Host "$($appliance.FQDN)" -ForegroundColor Cyan
-    }
-    catch {
-        # Log the failed connection
-        Write-Log -Message "Failed to connect to appliance: $($appliance.FQDN). Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
+    if (-not $existingConnection) {
+        try {
+            # Use the Connect-OVMgmt cmdlet to connect to the appliance
+            Connect-OVMgmt -Hostname $fqdn -Credential $credential
 
-        # Display the failed connection in the console
-        Write-Host "`t• Failed to connect to appliance: $($appliance.FQDN). Error: $($_.Exception.Message)" -ForegroundColor Red
+            # Log the successful connection
+            Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
+
+            # Display the successful connection in the console
+            Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
+            Write-Host "$fqdn" -ForegroundColor Cyan
+        }
+        catch {
+            # Log the failed connection
+            Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
+        }
     }
 }
 # Just before calling Complete-Logging
