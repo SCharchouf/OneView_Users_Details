@@ -5,7 +5,7 @@ $ScriptVersion = "1.0"
 # Get the directory from which the script is being executed
 $scriptDirectory = $PSScriptRoot
 # Get the parent directory of the script's directory
-$parentPath = Split-Path -Parent $scriptPath
+$parentPath = Split-Path -Parent $scriptDirectory
 # Define the logging function Directory
 $loggingFunctionsDirectory = Join-Path -Path $parentPath -ChildPath "Logging_Function"
 # Construct the path to the Logging_Functions.ps1 script
