@@ -161,8 +161,8 @@ if ($ConnectedSessions) {
     # Display that there are already connected sessions in the console
     Write-Host "`t• Existing sessions found. Disconnecting all sessions." -ForegroundColor Gray
 
-    # Disconnect all existing sessions
-    $ConnectedSessions | Disconnect-OVMgmt
+    # Disconnect all existing sessions and suppress the output
+    $null = $ConnectedSessions | Disconnect-OVMgmt
 }
 
 # Loop through each appliance and connect
@@ -171,15 +171,8 @@ foreach ($appliance in $Appliances) {
     $fqdn = $appliance.FQDN.ToUpper()
 
     try {
-        # Temporarily redirect console output to null
-        $originalOut = [Console]::Out
-        [Console]::SetOut([System.IO.TextWriter]::Null)
-
-        # Use the Connect-OVMgmt cmdlet to connect to the appliance
-        Connect-OVMgmt -Hostname $fqdn -Credential $credential
-
-        # Restore console output
-        [Console]::SetOut($originalOut)
+        # Use the Connect-OVMgmt cmdlet to connect to the appliance and suppress the output
+        $null = Connect-OVMgmt -Hostname $fqdn -Credential $credential
 
         # Log the successful connection
         Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
@@ -189,9 +182,6 @@ foreach ($appliance in $Appliances) {
         Write-Host "$fqdn" -ForegroundColor Cyan
     }
     catch {
-        # Restore console output in case of an error
-        [Console]::SetOut($originalOut)
-
         # Log the failed connection
         Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
     }
