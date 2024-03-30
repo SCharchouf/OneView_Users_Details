@@ -4,8 +4,10 @@ Clear-Host
 $ScriptVersion = "1.0"
 # Get the directory from which the script is being executed
 $scriptDirectory = $PSScriptRoot
-# Move up one level from the current script directory and then into the Logging_Function directory
-$loggingFunctionsDirectory = Join-Path -Path $scriptDirectory -ChildPath "..\Logging_Function"
+# Get the parent directory of the script's directory
+$parentPath = Split-Path -Parent $scriptPath
+# Define the logging function Directory
+$loggingFunctionsDirectory = Join-Path -Path $parentPath -ChildPath "Logging_Function"
 # Construct the path to the Logging_Functions.ps1 script
 $loggingFunctionsPath = Join-Path -Path $loggingFunctionsDirectory -ChildPath "Logging_Functions.ps1"
 # Script Header main script
@@ -153,7 +155,7 @@ else {
     # Save the credentials to the file for future use
     $credential | Export-Clixml -Path $credentialFile
 }
-# Check if there are any existing sessions
+# Check if there are any existing sessions to any OneView appliance and disconnect them if found
 if ($ConnectedSessions) {
     # Log that there are already connected sessions
     Write-Log -Message "Existing sessions found. Disconnecting all sessions." -Level "Info" -NoConsoleOutput
@@ -169,23 +171,6 @@ if ($ConnectedSessions) {
 
     # Display that all sessions have been disconnected in the console
     Write-Host "`t• All existing sessions have been disconnected." -ForegroundColor Green
-}
-# Loop through each appliance and connect
-foreach ($appliance in $Appliances) {
-    # Convert the FQDN to uppercase
-    $fqdn = $appliance.FQDN.ToUpper()
-
-    try {
-        # Use the Connect-OVMgmt cmdlet to connect to the appliance and suppress the output
-        $null = Connect-OVMgmt -Hostname $fqdn -Credential $credential
-
-        # Log the successful connection
-        Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
-    }
-    catch {
-        # Log the failed connection
-        Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
-    }
 }
 # Just before calling Complete-Logging
 $endTime = Get-Date
