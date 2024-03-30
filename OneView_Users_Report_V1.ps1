@@ -152,39 +152,33 @@ if (Test-Path -Path $credentialFile) {
     # Save the credentials to the file for future use
     $credential | Export-Clixml -Path $credentialFile
 }
+# Check if there are any existing sessions
+if ($ConnectedSessions) {
+    # Log that there are already connected sessions
+    Write-Log -Message "Existing sessions found. Disconnecting all sessions." -Level "Info" -NoConsoleOutput
+
+    # Display that there are already connected sessions in the console
+    Write-Host "`t• Existing sessions found. Disconnecting all sessions." -ForegroundColor Gray
+
+    # Disconnect all existing sessions
+    $ConnectedSessions | Disconnect-OVMgmt
+}
+
 # Loop through each appliance and connect
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
     $fqdn = $appliance.FQDN.ToUpper()
 
-    # Check if a connection to the appliance already exists
-    $existingConnection = $ConnectedSessions | Where-Object { $_.HostName -eq $fqdn }
-
-    if ($existingConnection) {
-        # Disconnect from the appliance
-        Disconnect-OVMgmt -Hostname $fqdn
-
-        # Log that a connection already exists
-        Write-Log -Message "Existing connection found to appliance: $fqdn. Disconnecting and reconnecting." -Level "Info" -NoConsoleOutput
-
-        # Display that a connection already exists in the console
-        Write-Host "`t• Existing connection found to appliance: " -NoNewline -ForegroundColor Gray
-        Write-Host "$fqdn. Disconnecting and reconnecting." -ForegroundColor Cyan
-    }
-
     try {
-        # Use the Connect-OVMgmt cmdlet to connect to the appliance
-        Connect-OVMgmt -Hostname $fqdn -Credential $credential
+        # Use the Connect-OVMgmt cmdlet to connect to the appliance and suppress the output
+        $null = Connect-OVMgmt -Hostname $fqdn -Credential $credential
 
-        # Only display the success message if a new connection was made
-        if (-not $existingConnection) {
-            # Log the successful connection
-            Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
+        # Log the successful connection
+        Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
 
-            # Display the successful connection in the console
-            Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
-            Write-Host "$fqdn" -ForegroundColor Cyan
-        }
+        # Display the successful connection in the console
+        Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
+        Write-Host "$fqdn" -ForegroundColor Cyan
     }
     catch {
         # Log the failed connection
