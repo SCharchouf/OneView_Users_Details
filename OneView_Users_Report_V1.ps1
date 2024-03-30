@@ -140,6 +140,7 @@ else {
 # Increment $script:taskNumber after the function call
 $script:taskNumber++
 # Third Task : Connect to each OneView appliance and retrieve the user information
+Write-Host "`n$($taskNumber). Connecting to each OneView appliance:`n" -ForegroundColor Magenta
 # Check if the credential file exists
 if (Test-Path -Path $credentialFile) {
     # Import the credentials from the file
@@ -175,12 +176,15 @@ foreach ($appliance in $Appliances) {
         # Use the Connect-OVMgmt cmdlet to connect to the appliance
         Connect-OVMgmt -Hostname $fqdn -Credential $credential
 
-        # Log the successful connection
-        Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
+        # Only display the success message if a new connection was made
+        if (-not $existingConnection) {
+            # Log the successful connection
+            Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
 
-        # Display the successful connection in the console
-        Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
-        Write-Host "$fqdn" -ForegroundColor Cyan
+            # Display the successful connection in the console
+            Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
+            Write-Host "$fqdn" -ForegroundColor Cyan
+        }
     }
     catch {
         # Log the failed connection
