@@ -176,27 +176,13 @@ foreach ($appliance in $Appliances) {
     $fqdn = $appliance.FQDN.ToUpper()
 
     try {
-        # Temporarily redirect console output to null
-        $originalOut = [Console]::Out
-        [Console]::SetOut([System.IO.TextWriter]::Null)
-
-        # Use the Connect-OVMgmt cmdlet to connect to the appliance
-        Connect-OVMgmt -Hostname $fqdn -Credential $credential
-
-        # Restore console output
-        [Console]::SetOut($originalOut)
+        # Use the Connect-OVMgmt cmdlet to connect to the appliance and suppress the output
+        $null = Connect-OVMgmt -Hostname $fqdn -Credential $credential
 
         # Log the successful connection
         Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
-
-        # Display the successful connection in the console
-        Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
-        Write-Host "$fqdn" -ForegroundColor Cyan
     }
     catch {
-        # Restore console output in case of an error
-        [Console]::SetOut($originalOut)
-
         # Log the failed connection
         Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
     }
