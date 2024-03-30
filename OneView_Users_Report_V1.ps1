@@ -152,7 +152,6 @@ if (Test-Path -Path $credentialFile) {
     $credential | Export-Clixml -Path $credentialFile
 }
 # Loop through each appliance and connect
-# Loop through each appliance and connect
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
     $fqdn = $appliance.FQDN.ToUpper()
