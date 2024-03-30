@@ -159,22 +159,32 @@ foreach ($appliance in $Appliances) {
     # Check if a connection to the appliance already exists
     $existingConnection = $ConnectedSessions | Where-Object { $_.HostName -eq $fqdn }
 
-    if (-not $existingConnection) {
-        try {
-            # Use the Connect-OVMgmt cmdlet to connect to the appliance
-            Connect-OVMgmt -Hostname $fqdn -Credential $credential
+    if ($existingConnection) {
+        # Disconnect from the appliance
+        Disconnect-OVMgmt -Hostname $fqdn
 
-            # Log the successful connection
-            Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
+        # Log that a connection already exists
+        Write-Log -Message "Existing connection found to appliance: $fqdn. Disconnecting and reconnecting." -Level "Info" -NoConsoleOutput
 
-            # Display the successful connection in the console
-            Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
-            Write-Host "$fqdn" -ForegroundColor Cyan
-        }
-        catch {
-            # Log the failed connection
-            Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
-        }
+        # Display that a connection already exists in the console
+        Write-Host "`t• Existing connection found to appliance: " -NoNewline -ForegroundColor Gray
+        Write-Host "$fqdn. Disconnecting and reconnecting." -ForegroundColor Cyan
+    }
+
+    try {
+        # Use the Connect-OVMgmt cmdlet to connect to the appliance
+        Connect-OVMgmt -Hostname $fqdn -Credential $credential
+
+        # Log the successful connection
+        Write-Log -Message "Successfully connected to appliance: $fqdn" -Level "OK" -NoConsoleOutput
+
+        # Display the successful connection in the console
+        Write-Host "`t• Successfully connected to appliance: " -NoNewline -ForegroundColor Gray
+        Write-Host "$fqdn" -ForegroundColor Cyan
+    }
+    catch {
+        # Log the failed connection
+        Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
     }
 }
 # Just before calling Complete-Logging
