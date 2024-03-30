@@ -168,6 +168,18 @@ Write-Host "`n$($taskNumber). Loop through each appliance & Collect users detail
 # Create an empty array to store the user details
 $userDetails = @()
 
+# Check if the credential file exists
+if (-not (Test-Path -Path $credentialFile)) {
+    # Prompt the user to enter their login and password
+    $credential = Get-Credential -Message "Please enter your login and password."
+    # Save the credential to the credential file
+    $credential | Export-Clixml -Path $credentialFile
+}
+else {
+    # Load the credential from the credential file
+    $credential = Import-Clixml -Path $credentialFile
+}
+
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
@@ -197,7 +209,7 @@ foreach ($appliance in $Appliances) {
 }
 
 # Define the path to the Excel file in the Reports directory
-$excelFilePath = Join-Path -Path $baseReportsDir -ChildPath 'UserDetails.xlsx'
+$excelFilePath = Join-Path -Path $reportsDir -ChildPath 'UserDetails.xlsx'
 
 # Export the user details to an Excel file
 $userDetails | Export-Excel -Path $excelFilePath
