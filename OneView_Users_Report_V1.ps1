@@ -159,12 +159,17 @@ if ($ConnectedSessions) {
     Write-Log -Message "Existing sessions found. Disconnecting all sessions." -Level "Info" -NoConsoleOutput
 
     # Display that there are already connected sessions in the console
-    Write-Host "`t• Existing sessions found. Disconnecting all sessions." -ForegroundColor Gray
+    Write-Host "`t• Existing sessions found. Disconnecting all sessions." -ForegroundColor Yellow
 
     # Disconnect all existing sessions and suppress the output
     $null = $ConnectedSessions | Disconnect-OVMgmt
-}
 
+    # Log that all sessions have been disconnected
+    Write-Log -Message "All existing sessions have been disconnected." -Level "Info" -NoConsoleOutput
+
+    # Display that all sessions have been disconnected in the console
+    Write-Host "`t• All existing sessions have been disconnected." -ForegroundColor Green
+}
 # Loop through each appliance and connect
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
