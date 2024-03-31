@@ -179,16 +179,16 @@ else {
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
     $fqdn = $appliance.FQDN.ToUpper()
+
     try {
         # Use the Connect-OVMgmt cmdlet to connect to the appliance
         Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
-        Write-Host "`t• Successfully connected to $fqdn and collecting users details." -ForegroundColor Green
-        Write-Log -Message "Successfully connected to $fqdn and collecting users details." -Level "OK" -NoConsoleOutput
-        # Get local users and LDAP groups from the current session
-        $localUsers = Get-OVUser 
-        $ldapGroups = Get-OVLdapGroup
-        # Add the user details to the array
-        $userDetails += $localUsers, $ldapGroups
+
+        Write-Host "`t• Successfully connected to $fqdn." -ForegroundColor Green
+        Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
+
+        # Here, you can add the code to collect user details or perform other tasks
+
         # Disconnect from the appliance
         Disconnect-OVMgmt -Hostname $fqdn
     }
