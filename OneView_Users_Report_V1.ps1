@@ -149,7 +149,7 @@ if ($existingSessions) {
     Write-Log -Message "Existing sessions found: $($existingSessions.Count)" -Level "Info" -NoConsoleOutput
     # Disconnect all existing sessions
     $existingSessions | ForEach-Object {
-        Disconnect-OVMgmt -Hostname $_.Hostname
+        Disconnect-OVMgmt -Hostname $_
     }
     Write-Host "`t• All existing sessions have been disconnected." -ForegroundColor Green
     Write-Log -Message "All existing sessions have been disconnected." -Level "OK" -NoConsoleOutput
