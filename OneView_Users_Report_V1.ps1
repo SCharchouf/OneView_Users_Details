@@ -175,9 +175,10 @@ else {
     # Load the credential from the credential file
     $credential = Import-Clixml -Path $credentialFile
 }
-# Initialize arrays to hold local users and LDAP groups
+# Initialize arrays to hold local users, LDAP groups, and connections
 $allLocalUsers = @()
 $allLdapGroups = @()
+$connections = @()
 
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
@@ -186,7 +187,8 @@ foreach ($appliance in $Appliances) {
 
     try {
         # Use the Connect-OVMgmt cmdlet to connect to the appliance
-        Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
+        $connection = Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
+        $connections += $connection
 
         Write-Host "`t• Successfully connected to $fqdn." -ForegroundColor Green
         Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
@@ -210,14 +212,16 @@ foreach ($appliance in $Appliances) {
             # Add the modified object to the array
             $allLdapGroups += $_
         }
-
-        # Disconnect from the appliance
-        Disconnect-OVMgmt -Hostname $fqdn
     }
     catch {
         # Log the failed connection
         Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
     }
+}
+
+# Disconnect from all appliances
+foreach ($connection in $connections) {
+    Disconnect-OVMgmt -Connection $connection
 }
 
 # Define the paths to the Excel files for local users and LDAP groups
@@ -227,7 +231,6 @@ $ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups
 # Export the local users and LDAP groups to Excel files
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
-
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
