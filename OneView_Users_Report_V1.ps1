@@ -228,6 +228,10 @@ $selectedLocalUsers = $allLocalUsers | Select-Object AppliancesConnection, userN
 # Select specific properties from LDAP groups and export to an Excel file
 $selectedLdapGroups = $allLdapGroups | Select-Object AppliancesConnection, category, loginDomain, egroup, directoryType,  PermissionsString
 
+# Add a new property 'UserType' to each object in $selectedLocalUsers and $selectedLdapGroups
+$selectedLocalUsers = $selectedLocalUsers | ForEach-Object { $_ | Add-Member -NotePropertyName 'UserType' -NotePropertyValue 'LocalUser' -PassThru }
+$selectedLdapGroups = $selectedLdapGroups | ForEach-Object { $_ | Add-Member -NotePropertyName 'UserType' -NotePropertyValue 'LdapGroup' -PassThru }
+
 # Combine selected local users and LDAP groups into a single array
 $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
 
