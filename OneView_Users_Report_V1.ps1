@@ -163,10 +163,8 @@ else {
 $allLocalUsers = @()
 $allLdapGroups = @()
 
-# Define the path to the Excel file for local users
-$localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
-# Define the path to the Excel file for LDAP groups
-$ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
+# Define the path to the Excel file for user details
+$userDetailsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'UserDetails.xlsx'
 
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
@@ -196,35 +194,40 @@ foreach ($appliance in $Appliances) {
     # Use the Connect-OVMgmt cmdlet to connect to the appliance
     Connect-OVMgmt -Hostname $fqdn -Credential $credential *> $null
 
-    Write-Host "`t[1]- Successfully connected to $fqdn." -ForegroundColor Green
+    Write-Host "`t1- Successfully connected to $fqdn." -ForegroundColor Green
     Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
     # Collect user details
-    Write-Host "`t[2]- Collecting user details from $fqdn." -ForegroundColor Green
+    Write-Host "`t2- Collecting user details from $fqdn." -ForegroundColor Green
     $users = Get-OVUser | ForEach-Object {
         $_ | Add-Member -NotePropertyName 'PermissionsString' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLocalUsers += $users
 
     # Collect LDAP group details
-    Write-Host "`t[3]- Collecting LDAP group details from $fqdn." -ForegroundColor Green
+    Write-Host "`t3- Collecting LDAP group details from $fqdn." -ForegroundColor Green
     $ldapGroups = Get-OVLdapGroup | ForEach-Object {
         $_ | Add-Member -NotePropertyName 'PermissionsString' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLdapGroups += $ldapGroups
 
+    # Generate reports
+    Write-Host "`t4- Generating report for $fqdn." -ForegroundColor Green
+    # Add your code here to generate the report
+
     # Disconnect from the appliance
     Disconnect-OVMgmt -Hostname $fqdn
 
-    Write-Host "`t[4]- Successfully disconnected from $fqdn." -ForegroundColor Magenta
+    Write-Host "`t5- Successfully disconnected from $fqdn." -ForegroundColor Magenta
     Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
 
-# Export the local users to an Excel file
-$allLocalUsers | Select-Object AppliancesConnection, userName, fullName, category, PermissionsString | Export-Excel -Path $localUsersExcelPath
+# Combine local users and LDAP groups into a single array
+$allUsers = $allLocalUsers + $allLdapGroups
 
-# Export the LDAP groups to an Excel file
-$allLdapGroups | Select-Object AppliancesConnection, category, loginDomain, egroup, directoryType,  PermissionsString | Export-Excel -Path $ldapGroupsExcelPath
+# Export the user details to an Excel file
+$allUsers | Export-Excel -Path $userDetailsExcelPath
+
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
