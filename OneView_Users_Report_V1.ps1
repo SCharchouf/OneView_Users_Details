@@ -222,12 +222,17 @@ foreach ($appliance in $Appliances) {
     Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
 
-# Combine local users and LDAP groups into a single array
-$allUsers = $allLocalUsers + $allLdapGroups
+# Select specific properties from local users and export to an Excel file
+$selectedLocalUsers = $allLocalUsers | Select-Object AppliancesConnection, userName, fullName, category, PermissionsString
 
-# Export the user details to an Excel file
-$allUsers | Export-Excel -Path $userDetailsExcelPath
+# Select specific properties from LDAP groups and export to an Excel file
+$selectedLdapGroups = $allLdapGroups | Select-Object AppliancesConnection, category, loginDomain, egroup, directoryType,  PermissionsString
 
+# Combine selected local users and LDAP groups into a single array
+$selectedUsers = $selectedLocalUsers + $selectedLdapGroups
+
+# Export the selected user details to an Excel file
+$selectedUsers | Export-Excel -Path $userDetailsExcelPath
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
