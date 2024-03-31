@@ -228,6 +228,7 @@ $ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
+
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
