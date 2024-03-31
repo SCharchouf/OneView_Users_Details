@@ -175,6 +175,10 @@ else {
     # Load the credential from the credential file
     $credential = Import-Clixml -Path $credentialFile
 }
+# Initialize arrays to hold local users and LDAP groups
+$allLocalUsers = @()
+$allLdapGroups = @()
+
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
@@ -184,62 +188,36 @@ foreach ($appliance in $Appliances) {
         # Use the Connect-OVMgmt cmdlet to connect to the appliance
         Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
 
-        Write-Host "`t• Successfully connected to :" -NoNewline -ForegroundColor Green
-        Write-Host " $fqdn" -ForegroundColor Blue
+        Write-Host "`t• Successfully connected to $fqdn." -ForegroundColor Green
         Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
         # Get local users from the current session
-        Get-OVUser | ForEach-Object {
-            # Create a custom object with only the required properties
-            $userDetails += New-Object PSObject -Property @{
-                type = $_.type
-                category = $_.category
-                created = $_.created
-                modified = $_.modified
-                fullName = $_.fullName
-                userName = $_.userName
-                emailAdress = $_.emailAdress
-                enabled = $_.enabled
-                permissions = $_.permissions -join ', '
-                ApplianceConnection = $_.ApplianceConnection
-                loginDomain = $null
-                egroup = $null
-                directoryType = $null
-            }
-        }
+        $localUsers = Get-OVUser
+        # Add the local users to the array
+        $allLocalUsers += $localUsers
 
         # Get LDAP groups from the current session
-        Get-OVLdapGroup | ForEach-Object {
-            # Create a custom object with only the required properties
-            $userDetails += New-Object PSObject -Property @{
-                type = $_.type
-                category = $_.category
-                created = $_.created
-                modified = $_.modified
-                loginDomain = $_.loginDomain
-                egroup = $_.egroup
-                directoryType = $_.directoryType
-                permissions = $_.permissions -join ', '
-                ApplianceConnection = $_.ApplianceConnection
-                fullName = $null
-                userName = $null
-                emailAdress = $null
-                enabled = $null
-            }
-        }
+        $ldapGroups = Get-OVLdapGroup
+        # Add the LDAP groups to the array
+        $allLdapGroups += $ldapGroups
 
         # Disconnect from the appliance
-        $ConnectedSessions | Disconnect-OVMgmt
+        Disconnect-OVMgmt -Hostname $fqdn
     }
     catch {
         # Log the failed connection
         Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
     }
 }
-# Define the path to the Excel file in the Reports directory
-$excelFilePath = Join-Path -Path $script:reportsDir -ChildPath 'UserDetails.xlsx'
-# Export the user details to an Excel file
-$userDetails | Export-Excel -Path $excelFilePath
+
+# Define the paths to the Excel files for local users and LDAP groups
+$localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
+$ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
+
+# Export the local users and LDAP groups to Excel files
+$allLocalUsers | Export-Excel -Path $localUsersExcelPath
+$allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
+
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
