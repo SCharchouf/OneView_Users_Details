@@ -189,21 +189,59 @@ foreach ($appliance in $Appliances) {
         Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
         # Get local users from the current session
-        $localUsers = Get-OVUser
-        # Define the path to the Excel file for local users
-        $localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
-        # Export the local users to an Excel file
-        $localUsers | Export-Excel -Path $localUsersExcelPath
+        Get-OVUser | ForEach-Object {
+            # Create a custom object with all the properties
+            $userDetails += New-Object PSObject -Property @{
+                type = $_.type
+                uri = $_.uri
+                category = $_.category
+                eTag = $_.eTag
+                created = $_.created
+                modified = $_.modified
+                fullName = $_.fullName
+                userName = $_.userName
+                emailAdress = $_.emailAdress
+                officePhone = $_.officePhone
+                permissions = $_.permissions -join ', '
+                description = $_.description
+                state = $_.state
+                name = $_.name
+                status = $_.status
+                ApplianceConnection = $_.ApplianceConnection
+                loginDomain = $null
+                egroup = $null
+                directoryType = $null
+            }
+        }
 
         # Get LDAP groups from the current session
-        $ldapGroups = Get-OVLdapGroup
-        # Define the path to the Excel file for LDAP groups
-        $ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
-        # Export the LDAP groups to an Excel file
-        $ldapGroups | Export-Excel -Path $ldapGroupsExcelPath
+        Get-OVLdapGroup | ForEach-Object {
+            # Create a custom object with all the properties
+            $userDetails += New-Object PSObject -Property @{
+                type = $_.type
+                uri = $_.uri
+                category = $_.category
+                eTag = $_.eTag
+                created = $_.created
+                modified = $_.modified
+                loginDomain = $_.loginDomain
+                egroup = $_.egroup
+                directoryType = $_.directoryType
+                permissions = $_.permissions -join ', '
+                ApplianceConnection = $_.ApplianceConnection
+                fullName = $null
+                userName = $null
+                emailAdress = $null
+                officePhone = $null
+                description = $null
+                state = $null
+                name = $null
+                status = $null
+            }
+        }
 
         # Disconnect from the appliance
-        Disconnect-OVMgmt -Hostname $fqdn
+        $ConnectedSessions | Disconnect-OVMgmt
     }
     catch {
         # Log the failed connection
