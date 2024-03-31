@@ -201,12 +201,16 @@ foreach ($appliance in $Appliances) {
 
     # Collect user details
     Write-Host "`t[2]- Collecting user details from $fqdn." -ForegroundColor Green
-    $users = Get-OVUser
+    $users = Get-OVUser | ForEach-Object {
+        $_ | Add-Member -NotePropertyName 'PermissionsString' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
+    }
     $allLocalUsers += $users
 
     # Collect LDAP group details
     Write-Host "`t[3]- Collecting LDAP group details from $fqdn." -ForegroundColor Green
-    $ldapGroups = Get-OVLdapGroup
+    $ldapGroups = Get-OVLdapGroup | ForEach-Object {
+        $_ | Add-Member -NotePropertyName 'PermissionsString' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
+    }
     $allLdapGroups += $ldapGroups
 
     # Disconnect from the appliance
