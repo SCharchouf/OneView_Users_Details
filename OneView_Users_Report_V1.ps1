@@ -180,7 +180,7 @@ foreach ($appliance in $Appliances) {
         Start-Sleep -Seconds 5
     }
     else {
-        Write-Host "`t• No existing sessions found." -ForegroundColor Green
+        Write-Host "`t• No existing sessions found." -ForegroundColor Gray
         Write-Log -Message "No existing sessions found." -Level "Info" -NoConsoleOutput
     }
 
@@ -195,7 +195,7 @@ foreach ($appliance in $Appliances) {
     # Disconnect from the appliance
     Disconnect-OVMgmt -Hostname $fqdn
 
-    Write-Host "`t• Successfully disconnected from $fqdn." -ForegroundColor Green
+    Write-Host "`t• Successfully disconnected from $fqdn." -ForegroundColor Magenta
     Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
 
