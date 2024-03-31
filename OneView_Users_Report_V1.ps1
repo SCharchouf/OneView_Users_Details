@@ -188,7 +188,26 @@ foreach ($appliance in $Appliances) {
         Write-Host " $fqdn" -ForegroundColor Blue
         Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
-        # Here, you can add the code to collect user details or perform other tasks
+        # Get local users and LDAP groups from the current session
+        $localUsers = Get-OVUser | ForEach-Object {
+            # Convert the permissions array into a string
+            $_.permissions = $_.permissions | ForEach-Object {
+                "$($_.roleName) - $($_.scopeURI)"
+            } -join ', '
+            # Output the modified object with only the specified properties
+            $_ | Select-Object type, uri, category, created, modified, fullName, userName, enabled, permissions, state, status, name, ApplianceConnection
+        }
+        $ldapGroups = Get-OVLdapGroup | ForEach-Object {
+            # Convert the permissions array into a string
+            $_.permissions = $_.permissions | ForEach-Object {
+                "$($_.roleName) - $($_.scopeURI)"
+            } -join ', '
+            # Output the modified object with only the specified properties
+            $_ | Select-Object type, uri, category, created, modified, fullName, userName, enabled, permissions, state, status, name, ApplianceConnection
+        }
+
+        # Add the user details to the array
+        $userDetails += $localUsers, $ldapGroups
 
         # Disconnect from the appliance
         Disconnect-OVMgmt -Hostname $fqdn
