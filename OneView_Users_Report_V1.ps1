@@ -195,7 +195,7 @@ foreach ($appliance in $Appliances) {
         Get-OVUser | ForEach-Object {
             # Convert the permissions array into a string
             $_.permissions = $_.permissions | ForEach-Object {
-                "$($_.roleName) - $($_.scopeURI)"
+                "$($_.roleName) - $($_.scopeUri)"
             } -join ', '
             # Add the modified object to the array
             $allLocalUsers += $_
@@ -205,7 +205,7 @@ foreach ($appliance in $Appliances) {
         Get-OVLdapGroup | ForEach-Object {
             # Convert the permissions array into a string
             $_.permissions = $_.permissions | ForEach-Object {
-                "$($_.roleName) - $($_.scopeURI)"
+                "$($_.roleName) - $($_.scopeUri)"
             } -join ', '
             # Add the modified object to the array
             $allLdapGroups += $_
