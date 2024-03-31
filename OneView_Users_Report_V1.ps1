@@ -221,10 +221,10 @@ foreach ($appliance in $Appliances) {
 }
 
 # Export the local users to an Excel file
-$allLocalUsers | Export-Excel -Path $localUsersExcelPath
+$allLocalUsers | Select-Object AppliancesConnection, userName, fullName, category, PermissionsString | Export-Excel -Path $localUsersExcelPath
 
 # Export the LDAP groups to an Excel file
-$allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
+$allLdapGroups | Select-Object AppliancesConnection, category, loginDomain, egroup, directoryType,  PermissionsString | Export-Excel -Path $ldapGroupsExcelPath
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
