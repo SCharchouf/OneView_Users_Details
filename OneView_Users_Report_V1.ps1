@@ -139,31 +139,10 @@ else {
     # Log the failure to import the CSV file
     Write-Log -Message "Failed to import the CSV file." -Level "Error" -NoConsoleOutput
 }
-# Increment $script:taskNumber after the function call
+crement $script:taskNumber after the function call
 $script:taskNumber++
-# Third Task : Check for existing sessions
-Write-Host "`n$($taskNumber). Check for existing sessions:`n" -ForegroundColor Magenta 
-$existingSessions = $ConnectedSessions
-if ($existingSessions) {
-    Write-Host "`t• Existing sessions found: $($existingSessions.Count)" -ForegroundColor Yellow
-    Write-Log -Message "Existing sessions found: $($existingSessions.Count)" -Level "Info" -NoConsoleOutput
-    # Disconnect all existing sessions
-    $existingSessions | ForEach-Object {
-        Disconnect-OVMgmt -Hostname $_
-    }
-    Write-Host "`t• All existing sessions have been disconnected." -ForegroundColor Green
-    Write-Log -Message "All existing sessions have been disconnected." -Level "OK" -NoConsoleOutput
-}
-else {
-    Write-Host "`t• No existing sessions found." -ForegroundColor Green
-    Write-Log -Message "No existing sessions found." -Level "Info" -NoConsoleOutput
-}
-# Increment $script:taskNumber after the function call
-$script:taskNumber++
-# Fourth Task : Loop through each appliance
+# Third Task : Loop through each appliance
 Write-Host "`n$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Magenta 
-# Create an empty array to store the user details
-$userDetails = @()
 # Check if the credential file exists
 if (-not (Test-Path -Path $credentialFile)) {
     # Prompt the user to enter their login and password
@@ -175,63 +154,45 @@ else {
     # Load the credential from the credential file
     $credential = Import-Clixml -Path $credentialFile
 }
-# Initialize arrays to hold local users, LDAP groups, and connections
-$allLocalUsers = @()
-$allLdapGroups = @()
-$connections = @()
-
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
     $fqdn = $appliance.FQDN.ToUpper()
 
+    # Check for existing sessions and disconnect them
+    $existingSessions = $ConnectedSessions
+    if ($existingSessions) {
+        Write-Host "`t• Existing sessions found: $($existingSessions.Count)" -ForegroundColor Yellow
+        Write-Log -Message "Existing sessions found: $($existingSessions.Count)" -Level "Info" -NoConsoleOutput
+        # Disconnect all existing sessions
+        $existingSessions | ForEach-Object {
+            Disconnect-OVMgmt -Hostname $_
+        }
+        Write-Host "`t• All existing sessions have been disconnected." -ForegroundColor Green
+        Write-Log -Message "All existing sessions have been disconnected." -Level "OK" -NoConsoleOutput
+
+        # Add a small delay to ensure the session is fully disconnected
+        Start-Sleep -Seconds 5
+    }
+    else {
+        Write-Host "`t• No existing sessions found." -ForegroundColor Green
+        Write-Log -Message "No existing sessions found." -Level "Info" -NoConsoleOutput
+    }
     try {
         # Use the Connect-OVMgmt cmdlet to connect to the appliance
-        $connection = Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
-        $connections += $connection
+        Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
 
         Write-Host "`t• Successfully connected to $fqdn." -ForegroundColor Green
         Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
-        # Get local users from the current session
-        Get-OVUser | ForEach-Object {
-            # Convert the permissions array into a string
-            $_.permissions = $_.permissions | ForEach-Object {
-                $_.roleName
-            } -join ', '
-            # Add the modified object to the array
-            $allLocalUsers += $_
-        }
-
-        # Get LDAP groups from the current session
-        Get-OVLdapGroup | ForEach-Object {
-            # Convert the permissions array into a string
-            $_.permissions = $_.permissions | ForEach-Object {
-                $_.roleName
-            } -join ', '
-            # Add the modified object to the array
-            $allLdapGroups += $_
-        }
+        # Disconnect from the appliance
+        Disconnect-OVMgmt -Hostname $fqdn
     }
     catch {
         # Log the failed connection
         Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
     }
 }
-
-# Disconnect from all appliances
-foreach ($connection in $connections) {
-    Disconnect-OVMgmt -Connection $connection
-}
-
-# Define the paths to the Excel files for local users and LDAP groups
-$localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
-$ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
-
-# Export the local users and LDAP groups to Excel files
-$allLocalUsers | Export-Excel -Path $localUsersExcelPath
-$allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
-
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
