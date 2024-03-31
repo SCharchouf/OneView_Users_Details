@@ -185,18 +185,27 @@ foreach ($appliance in $Appliances) {
         Write-Host "`t• Successfully connected to $fqdn and collecting users details." -ForegroundColor Green
         Write-Log -Message "Successfully connected to $fqdn and collecting users details." -Level "OK" -NoConsoleOutput
         # Get local users and LDAP groups from the current session
-        $localUsers = Get-OVUser | ForEach-Object {
-            # Convert the permissions array into a string
-            $_.permissions = $_.permissions -join ', '
-            # Output the modified object
-            $_
-        }
-        $ldapGroups = Get-OVLdapGroup| ForEach-Object {
-            # Convert the permissions array into a string
-            $_.permissions = $_.permissions -join ', '
-            # Output the modified object
-            $_
-        }
+# Get local users and LDAP groups from the current session
+$localUsers = Get-OVUser | ForEach-Object {
+    # Print the type and value of the permissions property for debugging
+    Write-Host "`t• Permissions type: $($_.permissions.GetType().FullName)"
+    Write-Host "`t• Permissions value: $($_.permissions)"
+    
+    # Convert the permissions array into a string
+    $_.permissions = $_.permissions -join ', '
+    # Output the modified object
+    $_
+}
+$ldapGroups = Get-OVLdapGroup | ForEach-Object {
+    # Print the type and value of the permissions property for debugging
+    Write-Host "`t• Permissions type: $($_.permissions.GetType().FullName)"
+    Write-Host "`t• Permissions value: $($_.permissions)"
+    
+    # Convert the permissions array into a string
+    $_.permissions = $_.permissions -join ', '
+    # Output the modified object
+    $_
+}
         # Add the user details to the array
         $userDetails += $localUsers, $ldapGroups
         # Disconnect from the appliance
