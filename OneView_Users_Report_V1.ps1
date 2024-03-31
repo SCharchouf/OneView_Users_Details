@@ -159,6 +159,15 @@ else {
     # Load the credential from the credential file
     $credential = Import-Clixml -Path $credentialFile
 }
+# Initialize arrays to hold local users and LDAP groups
+$allLocalUsers = @()
+$allLdapGroups = @()
+
+# Define the path to the Excel file for local users
+$localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
+# Define the path to the Excel file for LDAP groups
+$ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
+
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
@@ -187,17 +196,31 @@ foreach ($appliance in $Appliances) {
     # Use the Connect-OVMgmt cmdlet to connect to the appliance
     Connect-OVMgmt -Hostname $fqdn -Credential $credential *> $null
 
-    Write-Host "`t• Successfully connected to $fqdn." -ForegroundColor Green
+    Write-Host "`t[1]- Successfully connected to $fqdn." -ForegroundColor Green
     Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
-    # Now, proceed with your existing code to collect user details...
+    # Collect user details
+    Write-Host "`t[2]- Collecting user details from $fqdn." -ForegroundColor Green
+    $users = Get-OVUser
+    $allLocalUsers += $users
+
+    # Collect LDAP group details
+    Write-Host "`t[3]- Collecting LDAP group details from $fqdn." -ForegroundColor Green
+    $ldapGroups = Get-OVLdapGroup
+    $allLdapGroups += $ldapGroups
 
     # Disconnect from the appliance
     Disconnect-OVMgmt -Hostname $fqdn
 
-    Write-Host "`t• Successfully disconnected from $fqdn." -ForegroundColor Magenta
+    Write-Host "`t[4]- Successfully disconnected from $fqdn." -ForegroundColor Magenta
     Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
+
+# Export the local users to an Excel file
+$allLocalUsers | Export-Excel -Path $localUsersExcelPath
+
+# Export the LDAP groups to an Excel file
+$allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
