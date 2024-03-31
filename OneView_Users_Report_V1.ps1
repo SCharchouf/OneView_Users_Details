@@ -64,10 +64,10 @@ function Import-ModulesIfNotExists {
     $totalModules = $ModuleNames.Count
     # Initialize the current module counter
     $currentModuleNumber = 0
-    # Loop through each module name
     foreach ($ModuleName in $ModuleNames) {
         $currentModuleNumber++
-        Write-Progress -Activity "Checking required modules" -Status "$ModuleName" -PercentComplete ($currentModuleNumber / $totalModules * 100)
+        # Replace the progress bar with a simple text output
+        Write-Host "`t• Checking module $currentModuleNumber of ${totalModules}: $ModuleName"
         try {
             # Check if the module is installed
             if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
@@ -100,7 +100,7 @@ function Import-ModulesIfNotExists {
         }
         # Add a delay to slow down the progress bar
         Start-Sleep -Seconds 1
-    }
+    }    
 }
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
