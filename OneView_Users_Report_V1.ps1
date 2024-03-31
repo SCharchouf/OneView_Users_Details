@@ -184,27 +184,22 @@ foreach ($appliance in $Appliances) {
         Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
         Write-Host "`t• Successfully connected to $fqdn and collecting users details." -ForegroundColor Green
         Write-Log -Message "Successfully connected to $fqdn and collecting users details." -Level "OK" -NoConsoleOutput
-        # Get local users and LDAP groups from the current session
 # Get local users and LDAP groups from the current session
 $localUsers = Get-OVUser | ForEach-Object {
-    # Print the type and value of the permissions property for debugging
-    Write-Host "`t• Permissions type: $($_.permissions.GetType().FullName)"
-    Write-Host "`t• Permissions value: $($_.permissions)"
-    
     # Convert the permissions array into a string
-    $_.permissions = $_.permissions -join ', '
-    # Output the modified object
-    $_
+    $_.permissions = $_.permissions | ForEach-Object {
+        "$($_.roleName) - $($_.scopeURI)"
+    } -join ', '
+    # Output the modified object with only the specified properties
+    $_ | Select-Object type, uri, category, created, modified, fullName, userName, enabled, permissions, state, status, name, ApplianceConnection
 }
 $ldapGroups = Get-OVLdapGroup | ForEach-Object {
-    # Print the type and value of the permissions property for debugging
-    Write-Host "`t• Permissions type: $($_.permissions.GetType().FullName)"
-    Write-Host "`t• Permissions value: $($_.permissions)"
-    
     # Convert the permissions array into a string
-    $_.permissions = $_.permissions -join ', '
-    # Output the modified object
-    $_
+    $_.permissions = $_.permissions | ForEach-Object {
+        "$($_.roleName) - $($_.scopeURI)"
+    } -join ', '
+    # Output the modified object with only the specified properties
+    $_ | Select-Object type, uri, category, created, modified, fullName, userName, enabled, permissions, state, status, name, ApplianceConnection
 }
         # Add the user details to the array
         $userDetails += $localUsers, $ldapGroups
