@@ -184,7 +184,8 @@ foreach ($appliance in $Appliances) {
         # Use the Connect-OVMgmt cmdlet to connect to the appliance
         Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
 
-        Write-Host "`t• Successfully connected to $fqdn." -ForegroundColor Green
+        Write-Host "`t• Successfully connected to :" -NoNewline -ForegroundColor Green
+        Write-Host " $fqdn" -ForegroundColor Blue
         Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
         # Here, you can add the code to collect user details or perform other tasks
