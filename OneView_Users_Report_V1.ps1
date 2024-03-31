@@ -188,19 +188,19 @@ foreach ($appliance in $Appliances) {
         Write-Host " $fqdn" -ForegroundColor Blue
         Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
-        # Get local users and LDAP groups from the current session
+        # Get local users from the current session
         $localUsers = Get-OVUser
+        # Define the path to the Excel file for local users
+        $localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
+        # Export the local users to an Excel file
+        $localUsers | Export-Excel -Path $localUsersExcelPath
+
+        # Get LDAP groups from the current session
         $ldapGroups = Get-OVLdapGroup
-
-        # Add the user details to the array
-        $userDetails += $localUsers, $ldapGroups
-
-        # Disconnect from the appliance
-        Disconnect-OVMgmt -Hostname $fqdn
-        write-host "`t• Successfully disconnected from :" -NoNewline -ForegroundColor Green
-
-        # Add the user details to the array
-        $userDetails += $localUsers, $ldapGroups
+        # Define the path to the Excel file for LDAP groups
+        $ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
+        # Export the LDAP groups to an Excel file
+        $ldapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
         # Disconnect from the appliance
         Disconnect-OVMgmt -Hostname $fqdn
