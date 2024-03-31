@@ -84,17 +84,17 @@ function Import-ModulesIfNotExists {
             }
             # Check if the module is already imported
             if (Get-Module -Name $ModuleName) {
-                Write-Host "`t• Module " -NoNewline -ForegroundColor White
+                Write-Host "`t• Module " -NoNewline -ForegroundColor DarkGray
                 Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Yellow
-                Write-Host " is already imported." -ForegroundColor White
+                Write-Host " is already imported." -ForegroundColor DarkGray
                 Write-Log -Message "Module '[$ModuleName]' is already imported." -Level "Info" -NoConsoleOutput
                 continue
             }
             # Try to import the module
             Import-Module $ModuleName -ErrorAction Stop
-            Write-Host "`t• Module " -NoNewline -ForegroundColor White
+            Write-Host "`t• Module " -NoNewline -ForegroundColor DarkGray
             Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Green
-            Write-Host " imported successfully." -ForegroundColor White
+            Write-Host " imported successfully." -ForegroundColor DarkGray
             Write-Log -Message "Module '[$ModuleName]' imported successfully." -Level "OK" -NoConsoleOutput
         }
         catch {
