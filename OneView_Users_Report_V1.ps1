@@ -192,14 +192,24 @@ foreach ($appliance in $Appliances) {
         Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
 
         # Get local users from the current session
-        $localUsers = Get-OVUser
-        # Add the local users to the array
-        $allLocalUsers += $localUsers
+        Get-OVUser | ForEach-Object {
+            # Convert the permissions array into a string
+            $_.permissions = $_.permissions | ForEach-Object {
+                "$($_.roleName) - $($_.scopeURI)"
+            } -join ', '
+            # Add the modified object to the array
+            $allLocalUsers += $_
+        }
 
         # Get LDAP groups from the current session
-        $ldapGroups = Get-OVLdapGroup
-        # Add the LDAP groups to the array
-        $allLdapGroups += $ldapGroups
+        Get-OVLdapGroup | ForEach-Object {
+            # Convert the permissions array into a string
+            $_.permissions = $_.permissions | ForEach-Object {
+                "$($_.roleName) - $($_.scopeURI)"
+            } -join ', '
+            # Add the modified object to the array
+            $allLdapGroups += $_
+        }
 
         # Disconnect from the appliance
         Disconnect-OVMgmt -Hostname $fqdn
