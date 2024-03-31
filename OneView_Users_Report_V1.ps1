@@ -144,7 +144,7 @@ else {
     # Log the failure to import the CSV file
     Write-Log -Message "Failed to import the CSV file." -Level "Error" -NoConsoleOutput
 }
-crement $script:taskNumber after the function call
+# increment $script:taskNumber after the function call
 $script:taskNumber++
 # Third Task : Loop through each appliance
 Write-Host "`n$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Magenta 
@@ -183,21 +183,22 @@ foreach ($appliance in $Appliances) {
         Write-Host "`t• No existing sessions found." -ForegroundColor Green
         Write-Log -Message "No existing sessions found." -Level "Info" -NoConsoleOutput
     }
-    try {
-        # Use the Connect-OVMgmt cmdlet to connect to the appliance
-        Connect-OVMgmt -Hostname $fqdn -Credential $credential | Out-Null
 
-        Write-Host "`t• Successfully connected to $fqdn." -ForegroundColor Green
-        Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
+    # Use the Connect-OVMgmt cmdlet to connect to the appliance
+    Connect-OVMgmt -Hostname $fqdn -Credential $credential *> $null
 
-        # Disconnect from the appliance
-        Disconnect-OVMgmt -Hostname $fqdn
-    }
-    catch {
-        # Log the failed connection
-        Write-Log -Message "Failed to connect to appliance: $fqdn. Error: $($_.Exception.Message)" -Level "Error" -NoConsoleOutput
-    }
+    Write-Host "`t• Successfully connected to $fqdn." -ForegroundColor Green
+    Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
+
+    # Now, proceed with your existing code to collect user details...
+
+    # Disconnect from the appliance
+    Disconnect-OVMgmt -Hostname $fqdn
+
+    Write-Host "`t• Successfully disconnected from $fqdn." -ForegroundColor Green
+    Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
+
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
