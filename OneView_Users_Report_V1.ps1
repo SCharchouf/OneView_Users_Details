@@ -190,23 +190,17 @@ foreach ($appliance in $Appliances) {
 
         # Get local users from the current session
         Get-OVUser | ForEach-Object {
-            # Create a custom object with all the properties
+            # Create a custom object with only the required properties
             $userDetails += New-Object PSObject -Property @{
                 type = $_.type
-                uri = $_.uri
                 category = $_.category
-                eTag = $_.eTag
                 created = $_.created
                 modified = $_.modified
                 fullName = $_.fullName
                 userName = $_.userName
                 emailAdress = $_.emailAdress
-                officePhone = $_.officePhone
+                enabled = $_.enabled
                 permissions = $_.permissions -join ', '
-                description = $_.description
-                state = $_.state
-                name = $_.name
-                status = $_.status
                 ApplianceConnection = $_.ApplianceConnection
                 loginDomain = $null
                 egroup = $null
@@ -216,12 +210,10 @@ foreach ($appliance in $Appliances) {
 
         # Get LDAP groups from the current session
         Get-OVLdapGroup | ForEach-Object {
-            # Create a custom object with all the properties
+            # Create a custom object with only the required properties
             $userDetails += New-Object PSObject -Property @{
                 type = $_.type
-                uri = $_.uri
                 category = $_.category
-                eTag = $_.eTag
                 created = $_.created
                 modified = $_.modified
                 loginDomain = $_.loginDomain
@@ -232,11 +224,7 @@ foreach ($appliance in $Appliances) {
                 fullName = $null
                 userName = $null
                 emailAdress = $null
-                officePhone = $null
-                description = $null
-                state = $null
-                name = $null
-                status = $null
+                enabled = $null
             }
         }
 
