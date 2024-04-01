@@ -230,6 +230,22 @@ $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
+# Select specific properties from local users
+$selectedLocalUsers = $allLocalUsers | Select-Object type, Role
+
+# Select specific properties from LDAP groups
+$selectedLdapGroups = $allLdapGroups | Select-Object type, Role
+
+# Combine selected local users and LDAP groups into a single array
+$selectedUsers = $selectedLocalUsers + $selectedLdapGroups
+
+# Define the path to the Excel file for combined user details
+$combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
+
+# Export the selected user details to an Excel file
+$selectedUsers | Export-Excel -Path $combinedUsersExcelPath
+
+
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
