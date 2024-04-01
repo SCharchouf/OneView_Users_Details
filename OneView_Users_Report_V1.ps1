@@ -231,10 +231,10 @@ $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
 # Select specific properties from local users
-$selectedLocalUsers = $allLocalUsers | Select-Object type, Role
+$selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, Role
 
 # Select specific properties from LDAP groups
-$selectedLdapGroups = $allLdapGroups | Select-Object type, Role
+$selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, Role
 
 # Combine selected local users and LDAP groups into a single array
 $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
