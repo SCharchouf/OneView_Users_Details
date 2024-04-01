@@ -225,7 +225,7 @@ foreach ($appliance in $Appliances) {
 }
 # increment $script:taskNumber after the function call
 $script:taskNumber++
-# Fourth Task : Loop through each appliance
+# Fourth Task : Assembling the Excel file
 Write-Host "`n$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Magenta 
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
@@ -246,7 +246,12 @@ $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
 # Define the path to the Excel file for combined user details
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
 
-# Check if the file is open
+function Close-ExcelFile {
+    param (
+        [string]$filePath
+    )
+
+    # Check if the file is open
 if ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
     try {
         # Attempt to close the Excel file twice
@@ -281,6 +286,7 @@ if ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue 
     catch {
         Write-Error "An error occurred while trying to close the Excel file: $_"
     }
+}
 }
 
 # Call the function
