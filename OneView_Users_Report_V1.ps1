@@ -250,51 +250,41 @@ function Close-ExcelFile {
         [string]$filePath
     )
 
-    # Check if the file is open
-    if ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
-        try {
-            # Attempt to close the Excel file twice
-            for ($i = 1; $i -le 2; $i++) {
-                # Write a message to the console
-                $message = "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it... Attempt $i/2"
-                Write-Host $message -ForegroundColor Yellow
+    # Start Excel with the specified file
+    $excel = Start-Process -FilePath "EXCEL.EXE" -ArgumentList "`"$filePath`"" -PassThru
 
-                # Write the message to a log file
-                Write-Log -Message $message -Level 'Warning'
+    # Wait for a moment to ensure Excel has time to start
+    Start-Sleep -Seconds 5
 
-                # Attempt to close the Excel file
-                $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
-                $excelProcess | ForEach-Object { $_.CloseMainWindow() | Out-Null }
+    # Attempt to close the Excel file twice
+    for ($i = 1; $i -le 2; $i++) {
+        # Write a message to the console
+        $message = "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it... Attempt $i/2"
+        Write-Host $message -ForegroundColor Yellow
 
-                # Wait for a moment to ensure the process has time to close
-                Start-Sleep -Seconds 10
+        # Write the message to a log file
+        Write-Log -Message $message -Level 'Warning'
 
-                # Check if the file is still open
-                if (!(Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
-                    # If the file is closed, break the loop and print a message
-                    Write-Host "The file '$(Split-Path $filePath -Leaf)' has been closed." -ForegroundColor Green
-                    return
-                }
-            }
+        # Attempt to stop the Excel process
+        Stop-Process -Id $excel.Id -Force -ErrorAction SilentlyContinue
 
-            # If the file is still open after two attempts, force close
-            Write-Warning "Failed to close '$(Split-Path $filePath -Leaf)' manually after 2 attempts. Forcing close..."
-            Invoke-Command -ScriptBlock { Stop-Process -Name excel -Force } | Out-Null
-            Write-Host "The file '$(Split-Path $filePath -Leaf)' has been force closed." -ForegroundColor Red
-            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' has been force closed." -Level "Warning"
-        }
-        catch {
-            Write-Error "An error occurred while trying to close the Excel file: $_"
+        # Wait for a moment to ensure the process has time to close
+        Start-Sleep -Seconds 10
+
+        # Check if the process is still running
+        if (!(Get-Process -Id $excel.Id -ErrorAction SilentlyContinue)) {
+            # If the process is not running, break the loop and print a message
+            Write-Host "The file '$(Split-Path $filePath -Leaf)' has been closed." -ForegroundColor Green
+            return
         }
     }
+
+    # If the process is still running after two attempts, print a warning message
+    Write-Warning "Failed to close '$(Split-Path $filePath -Leaf)' manually after 2 attempts."
 }
 
 # Call the function
 Close-ExcelFile -filePath $combinedUsersExcelPath
-
-
-
-
 
 # Sort the selected user details based on ApplianceConnection
 $sortedUsers = $selectedUsers | Sort-Object -Property ApplianceConnection
