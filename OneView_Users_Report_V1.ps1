@@ -163,8 +163,10 @@ else {
 $allLocalUsers = @()
 $allLdapGroups = @()
 
-# Define the path to the Excel file for user details
-$userDetailsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'UserDetails.xlsx'
+# Define the path to the Excel file for local users
+$localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
+# Define the path to the Excel file for LDAP groups
+$ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
 
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
@@ -200,39 +202,14 @@ foreach ($appliance in $Appliances) {
     # Collect user details
     Write-Host "`t2- Collecting user details from $fqdn." -ForegroundColor Green
     $users = Get-OVUser | ForEach-Object {
-        $_ | Add-Member -NotePropertyName 'PermissionsString' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
+        $_ | Add-Member -NotePropertyName 'Role' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLocalUsers += $users
-    # Check if the properties exist and are not null in $allLocalUsers
-    $allLocalUsers | ForEach-Object {
-        if ($null -eq $_) {
-            Write-Host "`tUser object is null."
-        }
-        elseif ($null -eq $_.AppliancesConnection) {
-            Write-Host "`tAppliancesConnection is null for user $($_.userName)."
-        }
-        elseif ($null -eq $_.permissions) {
-            Write-Host "`tpermissions is null for user $($_.userName)."
-        }
-        elseif ($null -eq $_.userName) {
-            Write-Host "`tuserName is null for user $($_.userName)."
-        }
-        elseif ($null -eq $_.fullName) {
-            Write-Host "`tfullName is null for user $($_.userName)."
-        }
-        elseif ($null -eq $_.category) {
-            Write-Host "`tcategory is null for user $($_.userName)."
-        }
-        elseif ($null -eq $_.type) {
-            Write-Host "`ttype is null for user $($_.userName)."
-        }
-    }
-
-
+    
     # Collect LDAP group details
     Write-Host "`t3- Collecting LDAP group details from $fqdn." -ForegroundColor Green
     $ldapGroups = Get-OVLdapGroup | ForEach-Object {
-        $_ | Add-Member -NotePropertyName 'PermissionsString' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
+        $_ | Add-Member -NotePropertyName 'Role' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLdapGroups += $ldapGroups
 
@@ -247,21 +224,11 @@ foreach ($appliance in $Appliances) {
     Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
 
-# Select specific properties from local users and export to an Excel file
-$selectedLocalUsers = $allLocalUsers | Select-Object AppliancesConnection, userName, fullName, category, PermissionsString
+# Export the local users to an Excel file
+$allLocalUsers | Export-Excel -Path $localUsersExcelPath
 
-# Select specific properties from LDAP groups and export to an Excel file
-$selectedLdapGroups = $allLdapGroups | Select-Object AppliancesConnection, category, loginDomain, egroup, directoryType, PermissionsString
-
-# Add a new property 'UserType' to each object in $selectedLocalUsers and $selectedLdapGroups
-$selectedLocalUsers = $selectedLocalUsers | ForEach-Object { $_ | Add-Member -NotePropertyName 'UserType' -NotePropertyValue 'LocalUser' -PassThru }
-$selectedLdapGroups = $selectedLdapGroups | ForEach-Object { $_ | Add-Member -NotePropertyName 'UserType' -NotePropertyValue 'LdapGroup' -PassThru }
-
-# Combine selected local users and LDAP groups into a single array
-$selectedUsers = $selectedLocalUsers + $selectedLdapGroups
-
-# Export the selected user details to an Excel file
-$selectedUsers | Export-Excel -Path $userDetailsExcelPath
+# Export the LDAP groups to an Excel file
+$allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
