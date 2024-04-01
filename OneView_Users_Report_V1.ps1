@@ -251,6 +251,7 @@ function Close-ExcelFile {
     )
 
     # Check if the file is open
+    $delay = 10
     while ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
         try {
             # Write a message to the console
@@ -258,14 +259,15 @@ function Close-ExcelFile {
             Write-Host $message -ForegroundColor Yellow
 
             # Write the message to a log file
-            Write-Log -Message $message -Level 'Warning'
+            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -Level 'Warning'
 
             # Attempt to close the Excel file
             $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
             $excelProcess | ForEach-Object { $_.CloseMainWindow() | Out-Null }
 
             # Wait for a moment to ensure the process has time to close
-            Start-Sleep -Seconds 10
+            Start-Sleep -Seconds $delay
+            $delay = [math]::max(1, $delay - 1)
         }
         catch {
             Write-Error "An error occurred while trying to close the Excel file: $_"
@@ -277,6 +279,7 @@ function Close-ExcelFile {
 
 # Call the function
 Close-ExcelFile -filePath $combinedUsersExcelPath
+
 
 
 # Sort the selected user details based on ApplianceConnection
