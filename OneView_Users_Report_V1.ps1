@@ -1,5 +1,7 @@
 # Clear the console window
 Clear-Host
+# Create a string of 4 spaces
+$Spaces = [string]::new(' ',4)
 # Define the script version
 $ScriptVersion = "1.0"
 # Get the directory from which the script is being executed
@@ -57,7 +59,7 @@ function Import-ModulesIfNotExists {
     # Start logging
     Start-Log -ScriptVersion $ScriptVersion -ScriptPath $PSCommandPath
     # Task 1: Checking required modules
-    Write-Host "`n$($taskNumber). Checking required modules:`n" -ForegroundColor Magenta
+    Write-Host "`n$Spaces$($taskNumber). Checking required modules:`n" -ForegroundColor Blue
     # Log the task
     Write-Log -Message "Checking required modules." -Level "Info" -NoConsoleOutput
     # Increment $script:taskNumber after the function call
