@@ -244,13 +244,13 @@ $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
 
 # Check if the file is open
-if (Test-Path $combinedUsersExcelPath -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $combinedUsersExcelPath -Leaf)*" })) {
+if ((Test-Path $combinedUsersExcelPath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $combinedUsersExcelPath -Leaf)*" })) {
     # Write a message to the console
     $message = "The file 'CombinedUsers.xlsx' is currently open. Attempting to close it..."
     Write-Host $message
 
     # Write the message to a log file
-    Write-Log -Message "The file 'CombinedUsers.xlsx' is currently open. Attempting to close it..." -Level "Warning"
+    Write-Log -Message "The file 'CombinedUsers.xlsx' is currently open. Attempting to close it..." -Level 'Warning'
 
     # Attempt to close the Excel file
     $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $combinedUsersExcelPath -Leaf)*" }
@@ -261,8 +261,8 @@ if (Test-Path $combinedUsersExcelPath -and (Get-Process excel -ErrorAction Silen
 
     # Check if the file is still open
     if (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $combinedUsersExcelPath -Leaf)*" }) {
-        Write-Warning "Failed to close 'CombinedUsers.xlsx'. Please close it manually before running this script."
-        return
+        Write-Warning "Failed to close 'CombinedUsers.xlsx' manually. Attempting to force close..."
+        Stop-Process -Name excel -Force
     }
 }
 
