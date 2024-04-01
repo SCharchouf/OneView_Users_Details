@@ -264,7 +264,7 @@ function Close-ExcelFile {
 
                 # Attempt to close the Excel file
                 $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
-                $excelProcess | ForEach-Object { $_.CloseMainWindow() }
+                $excelProcess | ForEach-Object { $closeResult = $_.CloseMainWindow() }
 
                 # Wait for a moment to ensure the process has time to close
                 Start-Sleep -Seconds 10
@@ -273,17 +273,15 @@ function Close-ExcelFile {
                 if (!(Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
                     # If the file is closed, break the loop and print a message
                     Write-Host "The file '$(Split-Path $filePath -Leaf)' has been closed." -ForegroundColor Green
-                    break
+                    return
                 }
             }
 
-            # Check if the file is still open after two attempts
-            if (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }) {
-                Write-Warning "Failed to close '$(Split-Path $filePath -Leaf)' manually after 2 attempts. Forcing close..."
-                Stop-Process -Name excel -Force
-                Write-Host "The file '$(Split-Path $filePath -Leaf)' has been force closed." -ForegroundColor Red
-                Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' has been force closed." -Level "Warning"
-            }
+            # If the file is still open after two attempts, force close
+            Write-Warning "Failed to close '$(Split-Path $filePath -Leaf)' manually after 2 attempts. Forcing close..."
+            Stop-Process -Name excel -Force | Out-Null
+            Write-Host "The file '$(Split-Path $filePath -Leaf)' has been force closed." -ForegroundColor Red
+            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' has been force closed." -Level "Warning"
         }
         catch {
             Write-Error "An error occurred while trying to close the Excel file: $_"
