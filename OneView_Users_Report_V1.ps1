@@ -249,9 +249,16 @@ $selectedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTop
 # Open the Excel package
 $excel = Open-ExcelPackage -Path $combinedUsersExcelPath
 
+# Check if a worksheet named 'Users_details' already exists
+if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
+    # If it exists, delete it
+    $existingWorksheet = $excel.'Users_details'
+    $existingWorksheet.Delete()
+}
+
 # Select the worksheet and rename it
 $worksheet = $excel.'Sheet1'
-$worksheet.Name = 'Users details report'
+$worksheet.Name = 'Users_details'
 
 # Apply formatting to the headers
 Set-Format -WorkSheet $worksheet -Range "A1:J1" -Bold -BackgroundColor DarkBlue -FontColor White
