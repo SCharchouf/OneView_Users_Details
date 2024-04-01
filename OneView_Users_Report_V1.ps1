@@ -203,6 +203,31 @@ foreach ($appliance in $Appliances) {
         $_ | Add-Member -NotePropertyName 'PermissionsString' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLocalUsers += $users
+    # Check if the properties exist and are not null in $allLocalUsers
+    $allLocalUsers | ForEach-Object {
+        if ($null -eq $_) {
+            Write-Host "`tUser object is null."
+        }
+        elseif ($null -eq $_.AppliancesConnection) {
+            Write-Host "`tAppliancesConnection is null for user $($_.userName)."
+        }
+        elseif ($null -eq $_.permissions) {
+            Write-Host "`tpermissions is null for user $($_.userName)."
+        }
+        elseif ($null -eq $_.userName) {
+            Write-Host "`tuserName is null for user $($_.userName)."
+        }
+        elseif ($null -eq $_.fullName) {
+            Write-Host "`tfullName is null for user $($_.userName)."
+        }
+        elseif ($null -eq $_.category) {
+            Write-Host "`tcategory is null for user $($_.userName)."
+        }
+        elseif ($null -eq $_.type) {
+            Write-Host "`ttype is null for user $($_.userName)."
+        }
+    }
+
 
     # Collect LDAP group details
     Write-Host "`t3- Collecting LDAP group details from $fqdn." -ForegroundColor Green
@@ -226,7 +251,7 @@ foreach ($appliance in $Appliances) {
 $selectedLocalUsers = $allLocalUsers | Select-Object AppliancesConnection, userName, fullName, category, PermissionsString
 
 # Select specific properties from LDAP groups and export to an Excel file
-$selectedLdapGroups = $allLdapGroups | Select-Object AppliancesConnection, category, loginDomain, egroup, directoryType,  PermissionsString
+$selectedLdapGroups = $allLdapGroups | Select-Object AppliancesConnection, category, loginDomain, egroup, directoryType, PermissionsString
 
 # Add a new property 'UserType' to each object in $selectedLocalUsers and $selectedLdapGroups
 $selectedLocalUsers = $selectedLocalUsers | ForEach-Object { $_ | Add-Member -NotePropertyName 'UserType' -NotePropertyValue 'LocalUser' -PassThru }
