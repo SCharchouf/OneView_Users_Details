@@ -230,8 +230,8 @@ $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
-# Select specific properties from local users
-$selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role
+# Select specific properties from local users and add LDAP group-specific properties with null values
+$selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name='loginDomain'; Expression={}}, @{Name='egroup'; Expression={}}, @{Name='directoryType'; Expression={}}
 
 # Select specific properties from LDAP groups
 $selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, loginDomain, egroup, directoryType, Role
@@ -244,6 +244,7 @@ $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'Combine
 
 # Export the selected user details to an Excel file
 $selectedUsers | Export-Excel -Path $combinedUsersExcelPath
+
 
 
 # Just before calling Complete-Logging
