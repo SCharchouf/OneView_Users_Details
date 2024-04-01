@@ -244,7 +244,23 @@ $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
 
 # Export the selected user details to an Excel file
-$selectedUsers | Export-Excel -Path $combinedUsersExcelPath
+$selectedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow
+
+# Open the Excel package
+$excel = Open-ExcelPackage -Path $combinedUsersExcelPath
+
+# Select the worksheet and rename it
+$worksheet = $excel.'Sheet1'
+$worksheet.Name = 'Users details report'
+
+# Apply formatting to the headers
+Set-Format -WorkSheet $worksheet -Range "A1:J1" -Bold -BackgroundColor DarkBlue -FontColor White
+
+# Sort data based on ApplianceConnection
+$worksheet | Sort-ExcelData -ColumnName 'ApplianceConnection' -Descending:$false
+
+# Save and close the Excel package
+Close-ExcelPackage $excel -Show
 
 
 
