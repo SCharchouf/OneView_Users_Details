@@ -230,11 +230,12 @@ $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
-# Select specific properties from local users and add LDAP group-specific properties with null values
-$selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name='loginDomain'; Expression={}}, @{Name='egroup'; Expression={}}, @{Name='directoryType'; Expression={}}
+# Select specific properties from local users and add LDAP group-specific properties with default values
+$selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name='loginDomain'; Expression={'NO'}}, @{Name='egroup'; Expression={'N/A'}}, @{Name='directoryType'; Expression={'User'}}
 
-# Select specific properties from LDAP groups
-$selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, loginDomain, egroup, directoryType, Role
+# Select specific properties from LDAP groups and add local user-specific properties with default values
+$selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name='userName'; Expression={'N/A'}}, @{Name='fullName'; Expression={'N/A'}}, Role, loginDomain, egroup, directoryType
+
 
 # Combine selected local users and LDAP groups into a single array
 $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
