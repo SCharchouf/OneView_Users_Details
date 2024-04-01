@@ -75,7 +75,6 @@ function Import-ModulesIfNotExists {
         Write-Host " of " -NoNewline -ForegroundColor DarkGray
         Write-Host "${totalModules}" -NoNewline -ForegroundColor Cyan
         Write-Host ": $ModuleName" -ForegroundColor DarkBlue
-
         try {
             # Check if the module is installed
             if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
@@ -172,17 +171,14 @@ else {
 # Initialize arrays to hold local users and LDAP groups
 $allLocalUsers = @()
 $allLdapGroups = @()
-
 # Define the path to the Excel file for local users
 $localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
 # Define the path to the Excel file for LDAP groups
 $ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
-
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
     $fqdn = $appliance.FQDN.ToUpper()
-
     # Check for existing sessions and disconnect them
     $existingSessions = $ConnectedSessions
     if ($existingSessions) {
@@ -196,7 +192,6 @@ foreach ($appliance in $Appliances) {
         Write-Host "`t• " -NoNewline -ForegroundColor White
         Write-Host "All existing sessions have been disconnected." -ForegroundColor Green
         Write-Log -Message "All existing sessions have been disconnected." -Level "OK" -NoConsoleOutput
-
         # Add a small delay to ensure the session is fully disconnected
         Start-Sleep -Seconds 5
     }
@@ -205,34 +200,27 @@ foreach ($appliance in $Appliances) {
         Write-Host "No existing sessions found.`n" -ForegroundColor Gray
         Write-Log -Message "No existing sessions found." -Level "Info" -NoConsoleOutput
     }
-
     # Use the Connect-OVMgmt cmdlet to connect to the appliance
     Connect-OVMgmt -Hostname $fqdn -Credential $credential *> $null
-
     Write-Host "`t1- Successfully connected to $fqdn." -ForegroundColor Green
     Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
-
     # Collect user details
     Write-Host "`t2- Collecting user details from $fqdn." -ForegroundColor Green
     $users = Get-OVUser | ForEach-Object {
         $_ | Add-Member -NotePropertyName 'Role' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLocalUsers += $users
-    
     # Collect LDAP group details
     Write-Host "`t3- Collecting LDAP group details from $fqdn." -ForegroundColor Green
     $ldapGroups = Get-OVLdapGroup | ForEach-Object {
         $_ | Add-Member -NotePropertyName 'Role' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLdapGroups += $ldapGroups
-
     # Generate reports
     Write-Host "`t4- Generating report for $fqdn." -ForegroundColor Green
     # Add your code here to generate the report
-
     # Disconnect from the appliance
     Disconnect-OVMgmt -Hostname $fqdn
-
     Write-Host "`t5- Successfully disconnected from $fqdn." -ForegroundColor Magenta
     Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
@@ -242,27 +230,20 @@ $script:taskNumber++
 Write-Host "`n$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Magenta 
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
-
 # Export the LDAP groups to an Excel file
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
-
 # Select specific properties from local users and add LDAP group-specific properties with default values
 $selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name = 'loginDomain'; Expression = { 'NO' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }
-
 # Select specific properties from LDAP groups and add local user-specific properties with default values
 $selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
-
-
 # Combine selected local users and LDAP groups into a single array
 $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
-
 # Define the path to the Excel file for combined user details
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
 function Close-ExcelFile {
     param (
         [string]$filePath
     )
-
     # Check if the file is open
     $delay = 10
     while ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
@@ -272,14 +253,11 @@ function Close-ExcelFile {
             Write-Host "The file " -NoNewline -ForegroundColor Yellow
             Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
             Write-Host " is currently open. Attempting to close it..." -ForegroundColor Yellow
-
             # Write the message to a log file
             Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -Level 'Warning' -NoConsoleOutput
-
             # Attempt to close the Excel file
             $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
             $excelProcess | ForEach-Object { $_.CloseMainWindow() | Out-Null }
-
             # Wait for a moment to ensure the process has time to close
             Start-Sleep -Seconds $delay
             $delay = [math]::max(1, $delay - 1)
@@ -294,34 +272,24 @@ function Close-ExcelFile {
     Write-Host "has been closed." -ForegroundColor Green
     Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed." -Level "OK" -NoConsoleOutput
 }
-
 # Call the function
 Close-ExcelFile -filePath $combinedUsersExcelPath
-
-
-
 # Sort the selected user details based on ApplianceConnection
 $sortedUsers = $selectedUsers | Sort-Object -Property ApplianceConnection
-
 # Export the sorted user details to an Excel file
 $sortedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow
-
 # Open the Excel package
 $excel = Open-ExcelPackage -Path $combinedUsersExcelPath
-
 # Check if a worksheet named 'Users_details' already exists
 if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
     # If it exists, delete it
     $excel.Workbook.Worksheets.Delete('Users_details')
 }
-
 # Rename the first worksheet to 'Users_details'
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
-
 # Apply formatting to the headers
 Set-Format -WorkSheet $worksheet -Range "A1:J1" -Bold -BackgroundColor DarkBlue -FontColor White
-
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
