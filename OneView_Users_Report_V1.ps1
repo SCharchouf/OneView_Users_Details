@@ -255,11 +255,12 @@ function Close-ExcelFile {
     while ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
         try {
             # Write a message to the console
-            $message = "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..."
-            Write-Host $message -ForegroundColor Yellow
+            Write-Host "`t• The file " -NoNewline -ForegroundColor Yellow
+            Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
+            Write-Host " is currently open. Attempting to close it..." -ForegroundColor Yellow
 
             # Write the message to a log file
-            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -Level 'Warning'
+            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -Level 'Warning' -NoConsoleOutput
 
             # Attempt to close the Excel file
             $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
@@ -273,8 +274,10 @@ function Close-ExcelFile {
             Write-Error "An error occurred while trying to close the Excel file: $_"
         }
     }
-
-    Write-Host "The file '$(Split-Path $filePath -Leaf)' has been closed." -ForegroundColor Green
+    Write-Host "`t• The file " -NoNewline -ForegroundColor DarkGray
+    Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
+    Write-Host "has been closed." -ForegroundColor Green
+    Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed." -Level "OK" -NoConsoleOutput
 }
 
 # Call the function
