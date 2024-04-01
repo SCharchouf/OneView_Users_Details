@@ -223,7 +223,10 @@ foreach ($appliance in $Appliances) {
     Write-Host "`t5- Successfully disconnected from $fqdn." -ForegroundColor Magenta
     Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
-
+# increment $script:taskNumber after the function call
+$script:taskNumber++
+# Fourth Task : Loop through each appliance
+Write-Host "`n$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Magenta 
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 
@@ -243,16 +246,13 @@ $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
 # Define the path to the Excel file for combined user details
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
 
-function Close-ExcelFile {
-    param (
-        [string]$filePath
-    )
-
-    # Check if the file is open
-    if ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
-        try {
+# Check if the file is open
+if ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
+    try {
+        # Attempt to close the Excel file twice
+        for ($i = 1; $i -le 2; $i++) {
             # Write a message to the console
-            $message = "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..."
+            $message = "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it... Attempt $i/2"
             Write-Host $message -ForegroundColor Yellow
 
             # Write the message to a log file
@@ -266,14 +266,20 @@ function Close-ExcelFile {
             Start-Sleep -Seconds 5
 
             # Check if the file is still open
-            if (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }) {
-                Write-Warning "Failed to close '$(Split-Path $filePath -Leaf)' manually. Attempting to force close..."
-                Stop-Process -Name excel -Force
+            if (!(Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
+                # If the file is closed, break the loop
+                break
             }
         }
-        catch {
-            Write-Error "An error occurred while trying to close the Excel file: $_"
+
+        # Check if the file is still open after two attempts
+        if (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }) {
+            Write-Warning "Failed to close '$(Split-Path $filePath -Leaf)' manually after 2 attempts. Forcing close..."
+            Stop-Process -Name excel -Force
         }
+    }
+    catch {
+        Write-Error "An error occurred while trying to close the Excel file: $_"
     }
 }
 
