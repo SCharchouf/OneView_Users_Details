@@ -35,11 +35,13 @@ if (Test-Path -Path $loggingFunctionsPath) {
     # Dot-source the Logging_Functions.ps1 script
     . $loggingFunctionsPath
     # Write a message to the console indicating that the logging functions have been loaded
-    Write-Host "`t• Logging functions have been loaded." -ForegroundColor Green
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Logging functions have been loaded." -ForegroundColor Green
 }
 else {
     # Write an error message to the console indicating that the logging functions script could not be found
-    Write-Host "`t• The logging functions script could not be found at: $loggingFunctionsPath" -ForegroundColor Red
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "The logging functions script could not be found at: $loggingFunctionsPath" -ForegroundColor Red
     # Stop the script execution
     exit
 }
@@ -67,38 +69,43 @@ function Import-ModulesIfNotExists {
     foreach ($ModuleName in $ModuleNames) {
         $currentModuleNumber++
         # Replace the progress bar with a simple text output
-        Write-Host "`t• Checking module " -NoNewline -ForegroundColor DarkGray
-        Write-Host "$currentModuleNumber" -NoNewline -ForegroundColor Blue
+        Write-Host "`t• " -NoNewline -ForegroundColor White
+        Write-Host "Checking module " -NoNewline -ForegroundColor DarkGray
+        Write-Host "$currentModuleNumber" -NoNewline -ForegroundColor White
         Write-Host " of " -NoNewline -ForegroundColor DarkGray
-        Write-Host "${totalModules}" -NoNewline -ForegroundColor Red
-        Write-Host ": $ModuleName" -ForegroundColor Blue
+        Write-Host "${totalModules}" -NoNewline -ForegroundColor Cyan
+        Write-Host ": $ModuleName" -ForegroundColor DarkBlue
 
         try {
             # Check if the module is installed
             if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
-                Write-Host "`t• Module " -NoNewline -ForegroundColor White
-                Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Red
+                Write-Host "`t• " -NoNewline -ForegroundColor White
+                Write-Host "Module " -NoNewline -ForegroundColor White
+                Write-Host "$ModuleName" -NoNewline -ForegroundColor Red
                 Write-Host " is not installed." -ForegroundColor White
-                Write-Log -Message "Module '[$ModuleName]' is not installed." -Level "Error" -NoConsoleOutput
+                Write-Log -Message "Module '$ModuleName' is not installed." -Level "Error" -NoConsoleOutput
                 continue
             }
             # Check if the module is already imported
             if (Get-Module -Name $ModuleName) {
-                Write-Host "`t• Module " -NoNewline -ForegroundColor DarkGray
-                Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Yellow
+                Write-Host "`t• " -NoNewline -ForegroundColor White
+                Write-Host "Module " -NoNewline -ForegroundColor DarkGray
+                Write-Host "$ModuleName" -NoNewline -ForegroundColor DarkBlue
                 Write-Host " is already imported." -ForegroundColor DarkGray
-                Write-Log -Message "Module '[$ModuleName]' is already imported." -Level "Info" -NoConsoleOutput
+                Write-Log -Message "Module '$ModuleName' is already imported." -Level "Info" -NoConsoleOutput
                 continue
             }
             # Try to import the module
             Import-Module $ModuleName -ErrorAction Stop
-            Write-Host "`t• Module " -NoNewline -ForegroundColor DarkGray
+            Write-Host "`t• " -NoNewline -ForegroundColor White
+            Write-Host "Module " -NoNewline -ForegroundColor DarkGray
             Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Green
             Write-Host " imported successfully." -ForegroundColor DarkGray
             Write-Log -Message "Module '[$ModuleName]' imported successfully." -Level "OK" -NoConsoleOutput
         }
         catch {
-            Write-Host "`t• Failed to import module " -NoNewline
+            Write-Host "`t• " -NoNewline -ForegroundColor White
+            Write-Host "Failed to import module " -NoNewline
             Write-Host "[$ModuleName]" -NoNewline -ForegroundColor Red
             Write-Host ": $_" -ForegroundColor Red
             Write-Log -Message "Failed to import module '[$ModuleName]': $_" -Level "Error" -NoConsoleOutput
@@ -130,9 +137,11 @@ if ($Appliances) {
     # Log the total number of appliances
     Write-Log -Message "There are $totalAppliances appliances in the CSV file." -Level "Info" -NoConsoleOutput
     # Display if the CSV file was imported successfully
-    Write-Host "`t• The CSV file was imported successfully." -ForegroundColor Green
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "The CSV file was imported successfully." -ForegroundColor Green
     # Display the total number of appliances
-    Write-Host "`t• Total number of appliances:" -NoNewline -ForegroundColor DarkGray
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Total number of appliances:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $totalAppliances" -NoNewline -ForegroundColor Cyan
     Write-Host "" # This is to add a newline after the above output
     # Log the successful import of the CSV file
@@ -140,7 +149,8 @@ if ($Appliances) {
 }
 else {
     # Display an error message if the CSV file failed to import
-    Write-Host "`t• Failed to import the CSV file." -ForegroundColor Red
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Failed to import the CSV file." -ForegroundColor Red
     # Log the failure to import the CSV file
     Write-Log -Message "Failed to import the CSV file." -Level "Error" -NoConsoleOutput
 }
@@ -176,20 +186,23 @@ foreach ($appliance in $Appliances) {
     # Check for existing sessions and disconnect them
     $existingSessions = $ConnectedSessions
     if ($existingSessions) {
-        Write-Host "`t• Existing sessions found: $($existingSessions.Count)" -ForegroundColor Yellow
+        Write-Host "`t• " -NoNewline -ForegroundColor White
+        Write-Host "Existing sessions found: $($existingSessions.Count)" -ForegroundColor Yellow
         Write-Log -Message "Existing sessions found: $($existingSessions.Count)" -Level "Info" -NoConsoleOutput
         # Disconnect all existing sessions
         $existingSessions | ForEach-Object {
             Disconnect-OVMgmt -Hostname $_
         }
-        Write-Host "`t• All existing sessions have been disconnected." -ForegroundColor Green
+        Write-Host "`t• " -NoNewline -ForegroundColor White
+        Write-Host "All existing sessions have been disconnected." -ForegroundColor Green
         Write-Log -Message "All existing sessions have been disconnected." -Level "OK" -NoConsoleOutput
 
         # Add a small delay to ensure the session is fully disconnected
         Start-Sleep -Seconds 5
     }
     else {
-        Write-Host "`t• No existing sessions found." -ForegroundColor Gray
+        Write-Host "`t• " -NoNewline -ForegroundColor White
+        Write-Host "No existing sessions found.`n" -ForegroundColor Gray
         Write-Log -Message "No existing sessions found." -Level "Info" -NoConsoleOutput
     }
 
@@ -255,7 +268,8 @@ function Close-ExcelFile {
     while ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
         try {
             # Write a message to the console
-            Write-Host "`t• The file " -NoNewline -ForegroundColor Yellow
+            Write-Host "`t• " -NoNewline -ForegroundColor White
+            Write-Host "The file " -NoNewline -ForegroundColor Yellow
             Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
             Write-Host " is currently open. Attempting to close it..." -ForegroundColor Yellow
 
@@ -274,7 +288,8 @@ function Close-ExcelFile {
             Write-Error "An error occurred while trying to close the Excel file: $_"
         }
     }
-    Write-Host "`t• The file " -NoNewline -ForegroundColor DarkGray
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "The file " -NoNewline -ForegroundColor DarkGray
     Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
     Write-Host "has been closed." -ForegroundColor Green
     Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed." -Level "OK" -NoConsoleOutput
