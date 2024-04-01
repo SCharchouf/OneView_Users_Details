@@ -266,8 +266,12 @@ if ((Test-Path $combinedUsersExcelPath) -and (Get-Process excel -ErrorAction Sil
     }
 }
 
-# Export the selected user details to an Excel file
-$selectedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow
+# Sort the selected user details based on ApplianceConnection
+$sortedUsers = $selectedUsers | Sort-Object -Property ApplianceConnection
+
+# Export the sorted user details to an Excel file
+$sortedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow
+
 # Open the Excel package
 $excel = Open-ExcelPackage -Path $combinedUsersExcelPath
 
@@ -284,14 +288,8 @@ $worksheet.Name = 'Users_details'
 # Apply formatting to the headers
 Set-Format -WorkSheet $worksheet -Range "A1:J1" -Bold -BackgroundColor DarkBlue -FontColor White
 
-# Sort data based on ApplianceConnection
-$worksheet | Sort-ExcelData -ColumnName 'ApplianceConnection' -Descending:$false
-
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
-
-
-
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
