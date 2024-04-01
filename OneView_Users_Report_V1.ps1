@@ -245,48 +245,50 @@ $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
 
 # Define the path to the Excel file for combined user details
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
-
 function Close-ExcelFile {
     param (
         [string]$filePath
     )
 
     # Check if the file is open
-if ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
-    try {
-        # Attempt to close the Excel file twice
-        for ($i = 1; $i -le 2; $i++) {
-            # Write a message to the console
-            $message = "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it... Attempt $i/2"
-            Write-Host $message -ForegroundColor Yellow
+    if ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
+        try {
+            # Attempt to close the Excel file twice
+            for ($i = 1; $i -le 2; $i++) {
+                # Write a message to the console
+                $message = "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it... Attempt $i/2"
+                Write-Host $message -ForegroundColor Yellow
 
-            # Write the message to a log file
-            Write-Log -Message $message -Level 'Warning'
+                # Write the message to a log file
+                Write-Log -Message $message -Level 'Warning'
 
-            # Attempt to close the Excel file
-            $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
-            $excelProcess | ForEach-Object { $_.CloseMainWindow() }
+                # Attempt to close the Excel file
+                $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
+                $excelProcess | ForEach-Object { $_.CloseMainWindow() }
 
-            # Wait for a moment to ensure the process has time to close
-            Start-Sleep -Seconds 5
+                # Wait for a moment to ensure the process has time to close
+                Start-Sleep -Seconds 10
 
-            # Check if the file is still open
-            if (!(Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
-                # If the file is closed, break the loop
-                break
+                # Check if the file is still open
+                if (!(Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
+                    # If the file is closed, break the loop and print a message
+                    Write-Host "The file '$(Split-Path $filePath -Leaf)' has been closed." -ForegroundColor Green
+                    break
+                }
+            }
+
+            # Check if the file is still open after two attempts
+            if (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }) {
+                Write-Warning "Failed to close '$(Split-Path $filePath -Leaf)' manually after 2 attempts. Forcing close..."
+                Stop-Process -Name excel -Force
+                Write-Host "The file '$(Split-Path $filePath -Leaf)' has been force closed." -ForegroundColor Red
+                Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' has been force closed." -Level "Warning"
             }
         }
-
-        # Check if the file is still open after two attempts
-        if (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }) {
-            Write-Warning "Failed to close '$(Split-Path $filePath -Leaf)' manually after 2 attempts. Forcing close..."
-            Stop-Process -Name excel -Force
+        catch {
+            Write-Error "An error occurred while trying to close the Excel file: $_"
         }
     }
-    catch {
-        Write-Error "An error occurred while trying to close the Excel file: $_"
-    }
-}
 }
 
 # Call the function
