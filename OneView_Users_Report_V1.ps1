@@ -231,10 +231,10 @@ $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 
 # Select specific properties from local users and add LDAP group-specific properties with default values
-$selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name='loginDomain'; Expression={'NO'}}, @{Name='egroup'; Expression={'N/A'}}, @{Name='directoryType'; Expression={'User'}}
+$selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name = 'loginDomain'; Expression = { 'NO' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }
 
 # Select specific properties from LDAP groups and add local user-specific properties with default values
-$selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name='userName'; Expression={'N/A'}}, @{Name='fullName'; Expression={'N/A'}}, Role, loginDomain, egroup, directoryType
+$selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
 
 
 # Combine selected local users and LDAP groups into a single array
@@ -268,19 +268,17 @@ if ((Test-Path $combinedUsersExcelPath) -and (Get-Process excel -ErrorAction Sil
 
 # Export the selected user details to an Excel file
 $selectedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow
-
 # Open the Excel package
 $excel = Open-ExcelPackage -Path $combinedUsersExcelPath
 
 # Check if a worksheet named 'Users_details' already exists
 if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
     # If it exists, delete it
-    $existingWorksheet = $excel.'Users_details'
-    $existingWorksheet.Delete()
+    $excel.Workbook.Worksheets.Delete('Users_details')
 }
 
-# Select the worksheet and rename it
-$worksheet = $excel.'Sheet1'
+# Rename the first worksheet to 'Users_details'
+$worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
 
 # Apply formatting to the headers
