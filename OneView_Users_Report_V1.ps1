@@ -294,6 +294,7 @@ Close-ExcelFile -filePath $combinedUsersExcelPath
 
 
 
+
 # Sort the selected user details based on ApplianceConnection
 $sortedUsers = $selectedUsers | Sort-Object -Property ApplianceConnection
 
