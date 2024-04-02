@@ -206,7 +206,7 @@ foreach ($appliance in $Appliances) {
     Connect-OVMgmt -Hostname $fqdn -Credential $credential *> $null
     Write-Host "`t1- Successfully connected to:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $fqdn" -ForegroundColor Green
-    Write-Log -Message "Successfully connected to: $fqdn." -Level "OK" -NoConsoleOutput
+    Write-Log -Message "Successfully connected to: $fqdn" -Level "OK" -NoConsoleOutput
     # Collect user details
     Write-Host "`t2- Collecting user details from:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $fqdn"  -ForegroundColor Green
@@ -222,13 +222,13 @@ foreach ($appliance in $Appliances) {
     }
     $allLdapGroups += $ldapGroups
     # Generate reports
-    Write-Host "`t4- Generating report for $fqdn." -NoNewline -ForegroundColor DarkGray
+    Write-Host "`t4- Generating report for:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $fqdn" -ForegroundColor Green
     # Disconnect from the appliance
     Disconnect-OVMgmt -Hostname $fqdn
-    Write-Host "`t5- Successfully disconnected from $fqdn." -NoNewline -ForegroundColor DarkGray
+    Write-Host "`t5- Successfully disconnected from:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $fqdn" -ForegroundColor Green
-    Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
+    Write-Log -Message "Successfully disconnected from $fqdn" -Level "OK" -NoConsoleOutput
 }
 # increment $script:taskNumber after the function call
 $script:taskNumber++
