@@ -307,24 +307,14 @@ if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
 
-# Get the number of properties in the selected users
-$propertyCount = ($selectedUsers | Get-Member -MemberType NoteProperty).Count
+# Add the sorted users to the worksheet
+$worksheet.Cells["A2"].LoadFromCollection($sortedUsers, $true)
 
-if ($propertyCount -eq 0) {
-    Write-Host "No properties found in selected users"
-    return
-}
-
-# Convert the property count to a column letter
-$propertyCountLetter = Convert-ToLetter $propertyCount
-
-if (-not $propertyCountLetter) {
-    Write-Host "Failed to convert property count to letter"
-    return
-}
+# Get the last column letter
+$lastColumnLetter = $worksheet.Dimension.End.Column
 
 # Apply formatting to the headers of the selected properties
-$range = $worksheet.Cells["A1:$($propertyCountLetter)1"]
+$range = $worksheet.Cells["A1:${lastColumnLetter}1"]
 $range.Style.Font.Bold = $true
 $range.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
 $range.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
