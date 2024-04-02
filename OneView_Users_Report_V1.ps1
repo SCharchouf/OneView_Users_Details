@@ -236,14 +236,14 @@ $script:taskNumber++
 Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
 # Define the Convert-ToLetter function
 function Convert-ToLetter([int]$index) {
+    $index--
     $alphabet = ,('A'..'Z')
-    $letter = ""
-    while ($index -gt 0) {
-        $index--
-        $letter = $alphabet[$index % 26] + $letter
-        $index = [int]($index / 26)
+    $columnLetter = ""
+    if ($index -ge 26) {
+        $columnLetter += $alphabet[[Math]::Floor($index / 26) - 1]
     }
-    return $letter
+    $columnLetter += $alphabet[$index % 26]
+    return $columnLetter
 }
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
