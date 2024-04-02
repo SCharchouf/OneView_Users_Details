@@ -289,12 +289,6 @@ $sortedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRo
 # Open the Excel package
 $excel = Open-ExcelPackage -Path $combinedUsersExcelPath
 
-# Check if a worksheet named 'Users_details' already exists
-if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
-    # If it exists, delete it
-    $excel.Workbook.Worksheets.Delete('Users_details')
-}
-
 # Rename the first worksheet to 'Users_details'
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
