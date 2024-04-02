@@ -306,16 +306,33 @@ if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
     # If it exists, delete it
     $excel.Workbook.Worksheets.Delete('Users_details')
 }
+# Rename the first worksheet to 'Users_details'
+$worksheet = $excel.Workbook.Worksheets[1]
+$worksheet.Name = 'Users_details'
+
 # Get the number of properties in the selected users
 $propertyCount = ($selectedUsers | Get-Member -MemberType NoteProperty).Count
+
+if ($propertyCount -eq 0) {
+    Write-Host "No properties found in selected users"
+    return
+}
+
 # Convert the property count to a column letter
 $propertyCountLetter = Convert-ToLetter $propertyCount
+
+if (-not $propertyCountLetter) {
+    Write-Host "Failed to convert property count to letter"
+    return
+}
+
 # Apply formatting to the headers of the selected properties
 $range = $worksheet.Cells["A1:$($propertyCountLetter)1"]
 $range.Style.Font.Bold = $true
 $range.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
 $range.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
 $range.Style.Font.Color.SetColor([System.Drawing.Color]::White)
+
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
