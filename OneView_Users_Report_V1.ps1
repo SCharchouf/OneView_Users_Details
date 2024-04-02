@@ -318,7 +318,11 @@ $lastColumn = $worksheet.Dimension.End.Column
 # Convert the last column number to a letter
 $lastColumnLetter = Convert-ToLetter $lastColumn
 # Apply formatting to the headers
-Set-Format -WorkSheet $worksheet -Range "A1:$($lastColumnLetter)1" -Bold -BackgroundColor DarkBlue -FontColor White
+$range = $worksheet.Cells["A1:$($lastColumnLetter)1"]
+$range.Style.Font.Bold = $true
+$range.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
+$range.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
+$range.Style.Font.Color.SetColor([System.Drawing.Color]::White)
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
