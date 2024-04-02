@@ -59,7 +59,7 @@ function Import-ModulesIfNotExists {
     # Start logging
     Start-Log -ScriptVersion $ScriptVersion -ScriptPath $PSCommandPath
     # Task 1: Checking required modules
-    Write-Host "`n$Spaces$($taskNumber). Checking required modules:`n" -ForegroundColor Blue
+    Write-Host "`n$Spaces$($taskNumber). Checking required modules:`n" -ForegroundColor Cyan
     # Log the task
     Write-Log -Message "Checking required modules." -Level "Info" -NoConsoleOutput
     # Increment $script:taskNumber after the function call
@@ -128,7 +128,7 @@ $credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "credential"
 # Define the path to the credential file
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 # Second Task import the CSV file
-Write-Host "`n$($taskNumber). Importing the CSV file:`n" -ForegroundColor Magenta
+Write-Host "`n$Spaces$($taskNumber). Importing the CSV file:`n" -ForegroundColor Cyan
 # Import Appliances list from CSV file
 $Appliances = Import-Csv -Path $csvFilePath
 # Confirm that the CSV file was imported successfully
@@ -158,7 +158,7 @@ else {
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Third Task : Loop through each appliance
-Write-Host "`n$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Magenta 
+Write-Host "`n$Spaces$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Cyan 
 # Check if the credential file exists
 if (-not (Test-Path -Path $credentialFile)) {
     # Prompt the user to enter their login and password
@@ -204,32 +204,36 @@ foreach ($appliance in $Appliances) {
     }
     # Use the Connect-OVMgmt cmdlet to connect to the appliance
     Connect-OVMgmt -Hostname $fqdn -Credential $credential *> $null
-    Write-Host "`t1- Successfully connected to $fqdn." -ForegroundColor Green
-    Write-Log -Message "Successfully connected to $fqdn." -Level "OK" -NoConsoleOutput
+    Write-Host "`t1- Successfully connected to:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $fqdn" -ForegroundColor Green
+    Write-Log -Message "Successfully connected to: $fqdn." -Level "OK" -NoConsoleOutput
     # Collect user details
-    Write-Host "`t2- Collecting user details from $fqdn." -ForegroundColor Green
+    Write-Host "`t2- Collecting user details from:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $fqdn"  -ForegroundColor Green
     $users = Get-OVUser | ForEach-Object {
         $_ | Add-Member -NotePropertyName 'Role' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLocalUsers += $users
     # Collect LDAP group details
-    Write-Host "`t3- Collecting LDAP group details from $fqdn." -ForegroundColor Green
+    Write-Host "`t3- Collecting LDAP group details from:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $fqdn" -ForegroundColor Green
     $ldapGroups = Get-OVLdapGroup | ForEach-Object {
         $_ | Add-Member -NotePropertyName 'Role' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLdapGroups += $ldapGroups
     # Generate reports
-    Write-Host "`t4- Generating report for $fqdn." -ForegroundColor Green
-    # Add your code here to generate the report
+    Write-Host "`t4- Generating report for $fqdn." -NoNewline -ForegroundColor DarkGray
+    Write-Host " $fqdn" -ForegroundColor Green
     # Disconnect from the appliance
     Disconnect-OVMgmt -Hostname $fqdn
-    Write-Host "`t5- Successfully disconnected from $fqdn." -ForegroundColor Magenta
+    Write-Host "`t5- Successfully disconnected from $fqdn." -NoNewline -ForegroundColor DarkGray
+    Write-Host " $fqdn" -ForegroundColor Green
     Write-Log -Message "Successfully disconnected from $fqdn." -Level "OK" -NoConsoleOutput
 }
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Fourth Task : Assembling the Excel file
-Write-Host "`n$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Magenta 
+Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
