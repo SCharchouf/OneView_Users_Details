@@ -70,13 +70,13 @@ function Import-ModulesIfNotExists {
     $currentModuleNumber = 0
     foreach ($ModuleName in $ModuleNames) {
         $currentModuleNumber++
-        # Replace the progress bar with a simple text output
+        # Simple text output for checking required modules
         Write-Host "`t• " -NoNewline -ForegroundColor White
         Write-Host "Checking module " -NoNewline -ForegroundColor DarkGray
         Write-Host "$currentModuleNumber" -NoNewline -ForegroundColor White
         Write-Host " of " -NoNewline -ForegroundColor DarkGray
         Write-Host "${totalModules}" -NoNewline -ForegroundColor Cyan
-        Write-Host ": $ModuleName" -ForegroundColor DarkBlue
+        Write-Host ": $ModuleName" -ForegroundColor White
         try {
             # Check if the module is installed
             if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
@@ -91,7 +91,7 @@ function Import-ModulesIfNotExists {
             if (Get-Module -Name $ModuleName) {
                 Write-Host "`t• " -NoNewline -ForegroundColor White
                 Write-Host "Module " -NoNewline -ForegroundColor DarkGray
-                Write-Host "$ModuleName" -NoNewline -ForegroundColor DarkBlue
+                Write-Host "$ModuleName" -NoNewline -ForegroundColor Yellow
                 Write-Host " is already imported." -ForegroundColor DarkGray
                 Write-Log -Message "Module '$ModuleName' is already imported." -Level "Info" -NoConsoleOutput
                 continue
