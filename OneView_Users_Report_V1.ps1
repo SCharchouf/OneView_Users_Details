@@ -307,8 +307,12 @@ if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
 
+# Create a LoadFromCollectionOptions object
+$options = New-Object -TypeName OfficeOpenXml.LoadFromCollectionOptions
+$options.PrintHeaders = $true
+
 # Add the sorted users to the worksheet
-$worksheet.Cells["A2"].LoadFromCollection($sortedUsers, $true)
+$worksheet.Cells["A2"].LoadFromCollection($sortedUsers, $options)
 
 # Get the last column letter
 $lastColumnLetter = $worksheet.Dimension.End.Column
