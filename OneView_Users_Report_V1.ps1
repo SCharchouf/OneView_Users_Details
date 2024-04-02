@@ -307,13 +307,21 @@ if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
 
-# Create a LoadFromCollectionOptions object
-$options = New-Object -TypeName OfficeOpenXml.LoadFromCollectionOptions
-$options.PrintHeaders = $true
+# Convert $sortedUsers to a DataTable
+$dataTable = New-Object System.Data.DataTable
+foreach ($property in ($sortedUsers | Get-Member -MemberType NoteProperty).Name) {
+    $dataTable.Columns.Add($property) | Out-Null
+}
+foreach ($user in $sortedUsers) {
+    $row = $dataTable.NewRow()
+    foreach ($property in $dataTable.Columns.ColumnName) {
+        $row[$property] = $user.$property
+    }
+    $dataTable.Rows.Add($row)
+}
 
-# Add the sorted users to the worksheet
-$worksheet.Cells["A2"].LoadFromCollection($sortedUsers, $options)
-
+# Add the DataTable to the worksheet
+$worksheet.Cells["A2"].LoadFromDataTable($dataTable, $true)
 # Get the last column letter
 $lastColumnLetter = $worksheet.Dimension.End.Column
 
