@@ -284,17 +284,32 @@ Close-ExcelFile -filePath $combinedUsersExcelPath
 # Sort the selected user details based on ApplianceConnection
 $sortedUsers = $selectedUsers | Sort-Object -Property ApplianceConnection
 # Export the sorted user details to an Excel file
-$sortedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow
+$sortedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -PassThru
+
 # Open the Excel package
 $excel = Open-ExcelPackage -Path $combinedUsersExcelPath
+
 # Check if a worksheet named 'Users_details' already exists
 if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
     # If it exists, delete it
     $excel.Workbook.Worksheets.Delete('Users_details')
 }
+
 # Rename the first worksheet to 'Users_details'
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
+
+# Calculate the range based on the number of properties
+$numberOfProperties = ($selectedUsers | Get-Member -MemberType NoteProperty).Count
+$lastColumnLetter = [char](64 + $numberOfProperties)  # Convert number to corresponding ASCII character (A=65, B=66, etc.)
+$range = $worksheet.Cells["A1:$lastColumnLetter" + "1"]
+
+# Apply formatting to the headers
+$range.Style.Font.Bold = $true
+$range.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
+$range.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
+$range.Style.Font.Color.SetColor([System.Drawing.Color]::White)
+
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
