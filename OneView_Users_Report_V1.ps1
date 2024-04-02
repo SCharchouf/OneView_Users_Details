@@ -234,17 +234,6 @@ foreach ($appliance in $Appliances) {
 $script:taskNumber++
 # Fourth Task : Assembling the Excel file
 Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
-# Define the Convert-ToLetter function
-function Convert-ToLetter([int]$index) {
-    $index--
-    $alphabet = ,('A'..'Z')
-    $columnLetter = ""
-    if ($index -ge 26) {
-        $columnLetter += $alphabet[[Math]::Floor($index / 26) - 1]
-    }
-    $columnLetter += $alphabet[$index % 26]
-    return $columnLetter
-}
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
@@ -306,32 +295,6 @@ if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
 # Rename the first worksheet to 'Users_details'
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
-
-# Convert $sortedUsers to a DataTable
-$dataTable = New-Object System.Data.DataTable
-foreach ($property in ($sortedUsers | Get-Member -MemberType NoteProperty).Name) {
-    $dataTable.Columns.Add($property) | Out-Null
-}
-foreach ($user in $sortedUsers) {
-    $row = $dataTable.NewRow()
-    foreach ($property in $dataTable.Columns.ColumnName) {
-        $row[$property] = $user.$property
-    }
-    $dataTable.Rows.Add($row)
-}
-
-# Add the DataTable to the worksheet
-$worksheet.Cells["A2"].LoadFromDataTable($dataTable, $true)
-# Get the last column letter
-$lastColumnLetter = $worksheet.Dimension.End.Column
-
-# Apply formatting to the headers of the selected properties
-$range = $worksheet.Cells["A1:${lastColumnLetter}1"]
-$range.Style.Font.Bold = $true
-$range.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
-$range.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
-$range.Style.Font.Color.SetColor([System.Drawing.Color]::White)
-
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
