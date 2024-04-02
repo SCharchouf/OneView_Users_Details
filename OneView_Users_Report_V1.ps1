@@ -235,18 +235,15 @@ $script:taskNumber++
 # Fourth Task : Assembling the Excel file
 Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
 # Define the Convert-ToLetter function
-function Convert-ToLetter {
-    param (
-        [int]$column
-    )
-
-    $alphabet = , @(65..90)
-    $columnName = while ($column) {
-        $digit = $column % 26
-        $column = [math]::Floor($column / 26)
-        $alphabet[$digit]
+function Convert-ToLetter([int]$index) {
+    $alphabet = ,('A'..'Z')
+    $letter = ""
+    while ($index -gt 0) {
+        $index--
+        $letter = $alphabet[$index % 26] + $letter
+        $index = [int]($index / 26)
     }
-    -join [char[]]$columnName
+    return $letter
 }
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
