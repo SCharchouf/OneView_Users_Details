@@ -248,7 +248,6 @@ function Convert-ToLetter {
     }
     -join [char[]]$columnName
 }
-
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
@@ -259,10 +258,6 @@ $selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, 
 $selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
 # Combine selected local users and LDAP groups into a single array
 $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
-# Get the number of properties
-$propertyCount = ($selectedUsers | Get-Member -MemberType NoteProperty).Count
-# Convert the property count to a letter
-$lastColumn = Convert-ToLetter $propertyCount
 # Define the path to the Excel file for combined user details
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
 # Define Close-ExcelFile function to close the Excel file if it is open 
@@ -314,8 +309,16 @@ if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
 # Rename the first worksheet to 'Users_details'
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
+# Get the first worksheet
+$worksheet = $excel.Workbook.Worksheets[1]
+
+# Get the last used column
+$lastColumn = $worksheet.Dimension.End.Column
+
+# Convert the last column number to a letter
+$lastColumnLetter = Convert-ToLetter $lastColumn
 # Apply formatting to the headers
-Set-Format -WorkSheet $worksheet -Range "A1:$($lastColumn)1" -Bold -BackgroundColor DarkBlue -FontColor White
+Set-Format -WorkSheet $worksheet -Range "A1:$($lastColumnLetter)1" -Bold -BackgroundColor DarkBlue -FontColor White
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
