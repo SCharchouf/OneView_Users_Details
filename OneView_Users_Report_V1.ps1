@@ -227,7 +227,7 @@ foreach ($appliance in $Appliances) {
     # Disconnect from the appliance
     Disconnect-OVMgmt -Hostname $fqdn
     Write-Host "`t5- Successfully disconnected from:" -NoNewline -ForegroundColor DarkGray
-    Write-Host " $fqdn" -ForegroundColor Green
+    Write-Host " $fqdn`n" -ForegroundColor Green
     Write-Log -Message "Successfully disconnected from $fqdn" -Level "OK" -NoConsoleOutput
 }
 # increment $script:taskNumber after the function call
