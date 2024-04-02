@@ -234,6 +234,21 @@ foreach ($appliance in $Appliances) {
 $script:taskNumber++
 # Fourth Task : Assembling the Excel file
 Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
+# Define the Convert-ToLetter function
+function Convert-ToLetter {
+    param (
+        [int]$column
+    )
+
+    $alphabet = ,@(65..90)
+    $columnName = while($column) {
+        $digit = $column % 26
+        $column = [math]::Floor($column / 26)
+        $alphabet[$digit]
+    }
+    -join [char[]]$columnName
+}
+
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
@@ -244,8 +259,13 @@ $selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, 
 $selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
 # Combine selected local users and LDAP groups into a single array
 $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
+# Get the number of properties
+$propertyCount = ($selectedUsers | Get-Member -MemberType NoteProperty).Count
+# Convert the property count to a letter
+$lastColumn = Convert-ToLetter $propertyCount
 # Define the path to the Excel file for combined user details
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
+# Define Close-ExcelFile function to close the Excel file if it is open 
 function Close-ExcelFile {
     param (
         [string]$filePath
@@ -275,7 +295,7 @@ function Close-ExcelFile {
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "The file " -NoNewline -ForegroundColor DarkGray
     Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
-    Write-Host "has been closed." -ForegroundColor Green
+    Write-Host "has been closed.`n" -ForegroundColor Green
     Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed." -Level "OK" -NoConsoleOutput
 }
 # Call the function
@@ -295,7 +315,7 @@ if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
 # Apply formatting to the headers
-Set-Format -WorkSheet $worksheet -Range "A1:J1" -Bold -BackgroundColor DarkBlue -FontColor White
+Set-Format -WorkSheet $worksheet -Range "A1:$($lastColumn)1" -Bold -BackgroundColor DarkBlue -FontColor White
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
