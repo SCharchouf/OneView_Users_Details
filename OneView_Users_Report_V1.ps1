@@ -1,7 +1,7 @@
 # Clear the console window
 Clear-Host
 # Create a string of 4 spaces
-$Spaces = [string]::new(' ',4)
+$Spaces = [string]::new(' ', 4)
 # Define the script version
 $ScriptVersion = "1.0"
 # Get the directory from which the script is being executed
@@ -240,8 +240,8 @@ function Convert-ToLetter {
         [int]$column
     )
 
-    $alphabet = ,@(65..90)
-    $columnName = while($column) {
+    $alphabet = , @(65..90)
+    $columnName = while ($column) {
         $digit = $column % 26
         $column = [math]::Floor($column / 26)
         $alphabet[$digit]
@@ -306,19 +306,12 @@ if ($excel.Workbook.Worksheets.Name -contains 'Users_details') {
     # If it exists, delete it
     $excel.Workbook.Worksheets.Delete('Users_details')
 }
-# Rename the first worksheet to 'Users_details'
-$worksheet = $excel.Workbook.Worksheets[1]
-$worksheet.Name = 'Users_details'
-# Get the first worksheet
-$worksheet = $excel.Workbook.Worksheets[1]
-
-# Get the last used column
-$lastColumn = $worksheet.Dimension.End.Column
-
-# Convert the last column number to a letter
-$lastColumnLetter = Convert-ToLetter $lastColumn
-# Apply formatting to the headers
-$range = $worksheet.Cells["A1:$($lastColumnLetter)1"]
+# Get the number of properties in the selected users
+$propertyCount = ($selectedUsers | Get-Member -MemberType NoteProperty).Count
+# Convert the property count to a column letter
+$propertyCountLetter = Convert-ToLetter $propertyCount
+# Apply formatting to the headers of the selected properties
+$range = $worksheet.Cells["A1:$($propertyCountLetter)1"]
 $range.Style.Font.Bold = $true
 $range.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
 $range.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
