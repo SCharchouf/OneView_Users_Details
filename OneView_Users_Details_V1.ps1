@@ -305,9 +305,6 @@ $selectedLocalUsers = $allLocalUsersCsv | Select-Object ApplianceConnection, typ
 $selectedLdapGroups = $allLdapGroupsCsv | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
 # Combine all local users and LDAP groups into a single array
 $combinedUsers = $selectedLocalUsers + $selectedLdapGroups
-# Export the combined users to an Excel file
-$combinedUsers | Export-Excel -Path $combinedUsersExcelPath
-# Define Close-ExcelFile function to close the Excel file if it is open
 # Define Close-ExcelFile function to close the Excel file if it is open 
 function Close-ExcelFile {
     param (
@@ -338,7 +335,7 @@ function Close-ExcelFile {
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "The file " -NoNewline -ForegroundColor DarkGray
     Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
-    Write-Host "has been closed.`n" -ForegroundColor Green
+    Write-Host " has been closed.`n" -ForegroundColor Green
     Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed." -Level "OK" -NoConsoleOutput
 }
 # Call the function
