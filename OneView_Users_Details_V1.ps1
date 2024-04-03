@@ -358,28 +358,14 @@ $propertyCount = ($sortedCombinedUsers | Get-Member -MemberType NoteProperty).Co
 $columnLetter = Convert-ToColumnName $propertyCount
 # Construct the range for the title row
 $titleRowRange = "A1:$columnLetter" + "1"
-# Define the properties for the Excel package
-$excelParams = @{
-    Path          = $combinedUsersExcelPath
-    AutoSize      = $true
-    FreezeTopRow  = $true
-    BoldTopRow    = $true
-    AutoFilter    = $true
-    Show          = $true
-    WorkSheetname = "CombinedUsers"
-    TableStyle    = "Medium6"
-}
-# Export the sorted combined users to an Excel file with the specified properties
-$FormattedExcelFile = $sortedCombinedUsers | Export-Excel @excelParams -PassThru
-# Get the worksheet
+# Format the title row
+$FormattedExcelFile = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -PassThru
 $ws = $FormattedExcelFile.Workbook.Worksheets["CombinedUsers"]
-# Set the title row style
 $ws.Cells[$titleRowRange].Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
 $ws.Cells[$titleRowRange].Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
 $ws.Cells[$titleRowRange].Style.Font.Color.SetColor([System.Drawing.Color]::White)
 $ws.Cells[$titleRowRange].Style.Font.Size = 12
 $ws.Cells[$titleRowRange].Style.Font.Bold = $false
-# Save and dispose the Excel file
 $FormattedExcelFile.Save()
 $FormattedExcelFile.Dispose()
 # Just before calling Complete-Logging
