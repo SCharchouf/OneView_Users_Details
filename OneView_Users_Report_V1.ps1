@@ -113,7 +113,7 @@ function Import-ModulesIfNotExists {
         }
         # Add a delay to slow down the progress bar
         Start-Sleep -Seconds 1
-    }    
+    }
 }
 # Import the required modules
 Import-ModulesIfNotExists -ModuleNames 'HPEOneView.660', 'Microsoft.PowerShell.Security', 'Microsoft.PowerShell.Utility', 'ImportExcel'
@@ -158,7 +158,7 @@ else {
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Third Task : Loop through each appliance
-Write-Host "`n$Spaces$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Cyan 
+Write-Host "`n$Spaces$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Cyan
 # Check if the credential file exists
 if (-not (Test-Path -Path $credentialFile)) {
     # Prompt the user to enter their login and password
@@ -170,13 +170,56 @@ else {
     # Load the credential from the credential file
     $credential = Import-Clixml -Path $credentialFile
 }
-# Initialize arrays to hold local users and LDAP groups
+# Initialize arrays
 $allLocalUsers = @()
 $allLdapGroups = @()
-# Define the path to the Excel file for local users
-$localUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LocalUsers.xlsx'
-# Define the path to the Excel file for LDAP groups
-$ldapGroupsExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'LdapGroups.xlsx'
+
+# Define the directories for the CSV and Excel files
+$csvDir = Join-Path -Path $script:ReportsDir -ChildPath 'CSV'
+$excelDir = Join-Path -Path $script:ReportsDir -ChildPath 'Excel'
+
+# Check if the CSV directory exists
+if (Test-Path -Path $csvDir) {
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "CSV directory already exists at:" -NoNewline -ForegroundColor DarkGray
+    write-host " $csvDir" -ForegroundColor Yellow
+    Write-Log -Message "CSV directory already exists at $csvDir" -Level "Info" -NoConsoleOutput
+} else {
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "CSV directory does not exist" -NoNewline -ForegroundColor Red
+    Write-Host "creating now..." -ForegroundColor DarkGray
+    Write-Log -Message "CSV directory does not exist, creating now..." -Level "Info" -NoConsoleOutput
+    New-Item -ItemType Directory -Path $csvDir
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "CSV directory created at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $csvDir" -ForegroundColor Green
+    Write-Log -Message "CSV directory created at $csvDir" -Level "OK" -NoConsoleOutput
+}
+
+# Check if the Excel directory exists
+if (Test-Path -Path $excelDir) {
+    write-host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Excel directory already exists at:" -NoNewline -ForegroundColor DarkGray
+    write-host " $excelDir" -ForegroundColor Yellow
+    Write-Log -Message "Excel directory already exists at $excelDir" -Level "Info" -NoConsoleOutput
+} else {
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Excel directory does not exist at" -NoNewline -ForegroundColor Red
+    Write-Host " $excelDir" -ForegroundColor DarkGray
+    Write-Log -Message "Excel directory does not exist at $excelDir, creating now..." -Level "Info" -NoConsoleOutput
+    New-Item -ItemType Directory -Path $excelDir
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Excel directory created at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $excelDir" -ForegroundColor Green
+    Write-Log -Message "Excel directory created at $excelDir" -Level "OK" -NoConsoleOutput
+}
+# Define the path to the CSV and Excel files for local users and LDAP groups
+$localUsersCsvPath = Join-Path -Path $csvDir -ChildPath 'LocalUsers.csv'
+$ldapGroupsCsvPath = Join-Path -Path $csvDir -ChildPath 'LdapGroups.csv'
+$localUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'LocalUsers.xlsx'
+$ldapGroupsExcelPath = Join-Path -Path $excelDir -ChildPath 'LdapGroups.xlsx'
+$combinedUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'CombinedUsers.xlsx'
+
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
@@ -238,6 +281,10 @@ Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundCo
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
+# Export the local users to a CSV file
+$allLocalUsers | Export-Csv -Path $localUsersCsvPath -NoTypeInformation
+# Export the LDAP groups to a CSV file
+$allLdapGroups | Export-Csv -Path $ldapGroupsCsvPath -NoTypeInformation
 # Select specific properties from local users and add LDAP group-specific properties with default values
 $selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name = 'loginDomain'; Expression = { 'NO' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }
 # Select specific properties from LDAP groups and add local user-specific properties with default values
@@ -246,7 +293,7 @@ $selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, 
 $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
 # Define the path to the Excel file for combined user details
 $combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
-# Define Close-ExcelFile function to close the Excel file if it is open 
+# Define Close-ExcelFile function to close the Excel file if it is open
 function Close-ExcelFile {
     param (
         [string]$filePath
