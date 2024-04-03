@@ -173,11 +173,9 @@ else {
 # Initialize arrays
 $allLocalUsers = @()
 $allLdapGroups = @()
-
 # Define the directories for the CSV and Excel files
 $csvDir = Join-Path -Path $script:ReportsDir -ChildPath 'CSV'
 $excelDir = Join-Path -Path $script:ReportsDir -ChildPath 'Excel'
-
 # Check if the CSV directory exists
 if (Test-Path -Path $csvDir) {
     Write-Host "`t• " -NoNewline -ForegroundColor White
@@ -195,7 +193,6 @@ if (Test-Path -Path $csvDir) {
     Write-Host " $csvDir" -ForegroundColor Green
     Write-Log -Message "CSV directory created at $csvDir" -Level "OK" -NoConsoleOutput
 }
-
 # Check if the Excel directory exists
 if (Test-Path -Path $excelDir) {
     write-host "`t• " -NoNewline -ForegroundColor White
@@ -219,7 +216,6 @@ $ldapGroupsCsvPath = Join-Path -Path $csvDir -ChildPath 'LdapGroups.csv'
 $localUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'LocalUsers.xlsx'
 $ldapGroupsExcelPath = Join-Path -Path $excelDir -ChildPath 'LdapGroups.xlsx'
 $combinedUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'CombinedUsers.xlsx'
-
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
@@ -291,8 +287,6 @@ $selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, 
 $selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
 # Combine selected local users and LDAP groups into a single array
 $selectedUsers = $selectedLocalUsers + $selectedLdapGroups
-# Define the path to the Excel file for combined user details
-$combinedUsersExcelPath = Join-Path -Path $script:ReportsDir -ChildPath 'CombinedUsers.xlsx'
 # Define Close-ExcelFile function to close the Excel file if it is open
 function Close-ExcelFile {
     param (
@@ -332,25 +326,20 @@ Close-ExcelFile -filePath $combinedUsersExcelPath
 $sortedUsers = $selectedUsers | Sort-Object -Property ApplianceConnection
 # Export the sorted user details to an Excel file
 $sortedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -PassThru
-
 # Open the Excel package
 $excel = Open-ExcelPackage -Path $combinedUsersExcelPath
-
 # Rename the first worksheet to 'Users_details'
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
-
 # Calculate the range based on the number of properties
 $numberOfProperties = ($selectedUsers | Get-Member -MemberType NoteProperty).Count
 $lastColumnLetter = [char](64 + $numberOfProperties)  # Convert number to corresponding ASCII character (A=65, B=66, etc.)
 $range = $worksheet.Cells["A1:$lastColumnLetter" + "1"]
-
 # Apply formatting to the headers
 $range.Style.Font.Bold = $true
 $range.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
 $range.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
 $range.Style.Font.Color.SetColor([System.Drawing.Color]::White)
-
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
