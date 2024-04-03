@@ -173,6 +173,8 @@ else {
 # Initialize arrays
 $allLocalUsers = @()
 $allLdapGroups = @()
+$allLocalUsersCsv = $allLocalUsers
+$allLdapGroupsCsv = $allLdapGroups
 # Define the directories for the CSV and Excel files
 $csvDir = Join-Path -Path $script:ReportsDir -ChildPath 'CSV'
 $excelDir = Join-Path -Path $script:ReportsDir -ChildPath 'Excel'
