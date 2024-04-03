@@ -127,8 +127,8 @@ $csvFilePath = Join-Path -Path $parentDirectory -ChildPath $csvFileName
 $credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "credential"
 # Define the path to the credential file
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
-# Second Task import the CSV file
-Write-Host "`n$Spaces$($taskNumber). Importing the CSV file:`n" -ForegroundColor Cyan
+# Second Task import Appliances list from the CSV file and loop through each appliance to collect user details.
+Write-Host "`n$Spaces$($taskNumber). Importing Appliances list from the CSV file:`n" -ForegroundColor Cyan
 # Import Appliances list from CSV file
 $Appliances = Import-Csv -Path $csvFilePath
 # Confirm that the CSV file was imported successfully
@@ -178,36 +178,49 @@ $csvDir = Join-Path -Path $script:ReportsDir -ChildPath 'CSV'
 $excelDir = Join-Path -Path $script:ReportsDir -ChildPath 'Excel'
 # Check if the CSV directory exists
 if (Test-Path -Path $csvDir) {
+    # Write a message to the console
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "CSV directory already exists at:" -NoNewline -ForegroundColor DarkGray
     write-host " $csvDir" -ForegroundColor Yellow
+    # Write a message to the log file
     Write-Log -Message "CSV directory already exists at $csvDir" -Level "Info" -NoConsoleOutput
 } else {
+    # Write a message to the console
     Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "CSV directory does not exist" -NoNewline -ForegroundColor Red
-    Write-Host "creating now..." -ForegroundColor DarkGray
+    Write-Host "CSV directory does not exist." -NoNewline -ForegroundColor Red
+    Write-Host " Creating now..." -ForegroundColor DarkGray
     Write-Log -Message "CSV directory does not exist, creating now..." -Level "Info" -NoConsoleOutput
-    New-Item -ItemType Directory -Path $csvDir
+    # Create the CSV directory if it does not exist already
+    New-Item -ItemType Directory -Path $csvDir | Out-Null
+    # Write a message to the console
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "CSV directory created at:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $csvDir" -ForegroundColor Green
+    # Write a message to the log file
     Write-Log -Message "CSV directory created at $csvDir" -Level "OK" -NoConsoleOutput
 }
 # Check if the Excel directory exists
 if (Test-Path -Path $excelDir) {
+    # Write a message to the console
     write-host "`t• " -NoNewline -ForegroundColor White
     Write-Host "Excel directory already exists at:" -NoNewline -ForegroundColor DarkGray
     write-host " $excelDir" -ForegroundColor Yellow
+    # Write a message to the log file
     Write-Log -Message "Excel directory already exists at $excelDir" -Level "Info" -NoConsoleOutput
 } else {
+    # Write a message to the console
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "Excel directory does not exist at" -NoNewline -ForegroundColor Red
     Write-Host " $excelDir" -ForegroundColor DarkGray
+    # Write a message to the log file
     Write-Log -Message "Excel directory does not exist at $excelDir, creating now..." -Level "Info" -NoConsoleOutput
-    New-Item -ItemType Directory -Path $excelDir
+    # Create the Excel directory if it does not exist already
+    New-Item -ItemType Directory -Path $excelDir | Out-Null
+    # Write a message to the console
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "Excel directory created at:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $excelDir" -ForegroundColor Green
+    # Write a message to the log file
     Write-Log -Message "Excel directory created at $excelDir" -Level "OK" -NoConsoleOutput
 }
 # Define the path to the CSV and Excel files for local users and LDAP groups
@@ -333,15 +346,6 @@ $excel = Open-ExcelPackage -Path $combinedUsersExcelPath
 # Rename the first worksheet to 'Users_details'
 $worksheet = $excel.Workbook.Worksheets[1]
 $worksheet.Name = 'Users_details'
-# Calculate the range based on the number of properties
-$numberOfProperties = ($selectedUsers | Get-Member -MemberType NoteProperty).Count
-$lastColumnLetter = [char](64 + $numberOfProperties)  # Convert number to corresponding ASCII character (A=65, B=66, etc.)
-$range = $worksheet.Cells["A1:$lastColumnLetter" + "1"]
-# Apply formatting to the headers
-$range.Style.Font.Bold = $true
-$range.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
-$range.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
-$range.Style.Font.Color.SetColor([System.Drawing.Color]::White)
 # Save and close the Excel package
 Close-ExcelPackage $excel -Show
 # Just before calling Complete-Logging
