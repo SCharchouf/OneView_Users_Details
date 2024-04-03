@@ -367,15 +367,21 @@ $ws.Cells[$titleRowRange].Style.Font.Color.SetColor([System.Drawing.Color]::Whit
 $ws.Cells[$titleRowRange].Style.Font.Size = 12
 $ws.Cells[$titleRowRange].Style.Font.Bold = $false
 #----------------------------------------------
-# Get the last row
+# Get the last row of the used range
 $lastRow = $ws.Dimension.End.Row
 
+# Get the last column of the used range
+$lastColumn = $ws.Dimension.End.Column
+
+# Convert the last column number to column letter
+$lastColumnLetter = Convert-ToColumnName $lastColumn
+
 # Construct the range for the data (excluding the first row)
-$dataRange = "A2:$lastColumn" + $lastRow
+$dataRange = "A2:$lastColumnLetter" + $lastRow
 
 # Add a table to the data range with the specified style
 $table = $ws.Tables.Add($ws.Cells[$dataRange], "Table1")
-$table.TableStyle = "TableStyleMedium2"
+$table.TableStyle = "Medium2"
 #----------------------------------------------
 $FormattedExcelFile.Save()
 $FormattedExcelFile.Dispose()
