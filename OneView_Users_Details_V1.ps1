@@ -173,8 +173,6 @@ else {
 # Initialize arrays
 $allLocalUsers = @()
 $allLdapGroups = @()
-$allLocalUsersCsv = $allLocalUsers
-$allLdapGroupsCsv = $allLdapGroups
 # Define the directories for the CSV and Excel files
 $csvDir = Join-Path -Path $script:ReportsDir -ChildPath 'CSV'
 $excelDir = Join-Path -Path $script:ReportsDir -ChildPath 'Excel'
@@ -292,6 +290,9 @@ Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundCo
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
+# Assign the local users and LDAP groups to variables
+$allLocalUsersCsv = $allLocalUsers
+$allLdapGroupsCsv = $allLdapGroups
 # Export the local users to a CSV file
 $allLocalUsersCsv | Export-Csv -Path $localUsersCsvPath -NoTypeInformation
 # Export the LDAP groups to a CSV file
@@ -339,17 +340,20 @@ function Close-ExcelFile {
 }
 # Call the function
 Close-ExcelFile -filePath $combinedUsersExcelPath
-# Sort the selected user details based on ApplianceConnection
-$sortedUsers = $selectedUsers | Sort-Object -Property ApplianceConnection
+# Sort the combined users by ApplianceConnection and then by userName
+$sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, userName
 # Export the sorted user details to an Excel file
-$sortedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -PassThru
-# Open the Excel package
-$excel = Open-ExcelPackage -Path $combinedUsersExcelPath
-# Rename the first worksheet to 'Users_details'
-$worksheet = $excel.Workbook.Worksheets[1]
-$worksheet.Name = 'Users_details'
-# Save and close the Excel package
-Close-ExcelPackage $excel -Show
+$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter
+# Open Excel package
+$excelPackage = Open-ExcelPackage -Path $combinedUsersExcelPath
+# Set the worksheet name
+$Worksheet = $excelPackage.Workbook.Worksheets[0]
+# Set the worksheet title
+$Worksheet.Cells[1, 1].Value = "Users_details"
+# Set the worksheet title font size
+$Worksheet.Cells[1, 1].Style.Font.Size = 16
+# Set the worksheet title font color
+$Worksheet.Cells[1, 1].Style.Font.Color.SetColor([System.Drawing.Color]::FromArgb(255, 0, 0))
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
