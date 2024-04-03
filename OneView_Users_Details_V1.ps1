@@ -308,27 +308,38 @@ $combinedUsers = $selectedLocalUsers + $selectedLdapGroups
 # Export the combined users to an Excel file
 $combinedUsers | Export-Excel -Path $combinedUsersExcelPath
 # Define Close-ExcelFile function to close the Excel file if it is open
+# Define Close-ExcelFile function to close the Excel file if it is open 
 function Close-ExcelFile {
     param (
         [string]$filePath
     )
     # Check if the file is open
+    $delay = 10
     while ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
         try {
             # Write a message to the console
-            Write-Host "`t• The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -ForegroundColor Yellow
+            Write-Host "`t• " -NoNewline -ForegroundColor White
+            Write-Host "The file " -NoNewline -ForegroundColor Yellow
+            Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
+            Write-Host " is currently open. Attempting to close it..." -ForegroundColor Yellow
             # Write the message to a log file
-            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it at $(Get-Date)." -Level 'Warning' -NoConsoleOutput
+            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -Level 'Warning' -NoConsoleOutput
             # Attempt to close the Excel file
             $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
-            $excelProcess | ForEach-Object { $_.CloseMainWindow(); $_.WaitForExit(10000) }
+            $excelProcess | ForEach-Object { $_.CloseMainWindow() | Out-Null }
+            # Wait for a moment to ensure the process has time to close
+            Start-Sleep -Seconds $delay
+            $delay = [math]::max(1, $delay - 1)
         }
         catch {
             Write-Error "An error occurred while trying to close the Excel file: $_"
         }
     }
-    Write-Host "`t• The file '$(Split-Path $filePath -Leaf)' has been closed.`n" -ForegroundColor Green
-    Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed at $(Get-Date)." -Level "OK" -NoConsoleOutput
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "The file " -NoNewline -ForegroundColor DarkGray
+    Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
+    Write-Host "has been closed.`n" -ForegroundColor Green
+    Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed." -Level "OK" -NoConsoleOutput
 }
 # Call the function
 Close-ExcelFile -filePath $combinedUsersExcelPath
