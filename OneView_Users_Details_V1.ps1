@@ -341,10 +341,8 @@ function Close-ExcelFile {
 # Call the function
 Close-ExcelFile -filePath $combinedUsersExcelPath
 # Sort the combined users by ApplianceConnection and then by userName
-$sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, userName
-# Export the sorted user details to an Excel file
-$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -TabColor Yellow -PassThru
-# ------------------------------------------------------------
+$sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
+# Define the function to convert a number to an Excel column name
 function Convert-ToColumnName($number) {
     $columnName = ""
     while ($number -gt 0) {
@@ -356,25 +354,20 @@ function Convert-ToColumnName($number) {
 }
 # Get the number of properties
 $propertyCount = ($sortedCombinedUsers | Get-Member -MemberType NoteProperty).Count
-write-host "Property Count: $propertyCount"
-
 # Convert the number of properties to the corresponding Excel column letter
 $columnLetter = Convert-ToColumnName $propertyCount
-
 # Construct the range for the title row
 $titleRowRange = "A1:$columnLetter" + "1"
-
 # Format the title row
-$excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -TabColor Yellow -PassThru
-$ws = $excel.Workbook.Worksheets["CombinedUsers"]
+$FormattedExcelFile = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -PassThru
+$ws = $FormattedExcelFile.Workbook.Worksheets["CombinedUsers"]
 $ws.Cells[$titleRowRange].Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
-$ws.Cells[$titleRowRange].Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::Blue)
+$ws.Cells[$titleRowRange].Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
 $ws.Cells[$titleRowRange].Style.Font.Color.SetColor([System.Drawing.Color]::White)
 $ws.Cells[$titleRowRange].Style.Font.Size = 12
-$ws.Cells[$titleRowRange].Style.Font.Bold = $true
-$excel.Save()
-$excel.Dispose()
-# ------------------------------------------------------------
+$ws.Cells[$titleRowRange].Style.Font.Bold = $false
+$FormattedExcelFile.Save()
+$FormattedExcelFile.Dispose()
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
