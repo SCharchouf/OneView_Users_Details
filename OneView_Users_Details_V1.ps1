@@ -373,14 +373,13 @@ $lastRow = $ws.Dimension.End.Row
 # Get the last column of the used range
 $lastColumn = $ws.Dimension.End.Column
 
-# Convert the last column number to column letter
-$lastColumnLetter = Convert-ToColumnName $lastColumn
-
 # Construct the range for the data (excluding the first row)
-$dataRange = "A2:$lastColumnLetter" + $lastRow
+$startCell = $ws.Cells[2, 1]
+$endCell = $ws.Cells[$lastRow, $lastColumn]
+$dataRange = $ws.Cells[$startCell.Address + ":" + $endCell.Address]
 
 # Add a table to the data range with the specified style
-$table = $ws.Tables.Add($ws.Cells[$dataRange], "Table1")
+$table = $ws.Tables.Add($dataRange, "Table1")
 $table.TableStyle = "Medium2"
 #----------------------------------------------
 $FormattedExcelFile.Save()
