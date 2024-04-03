@@ -285,8 +285,10 @@ $allLdapGroups | Export-Csv -Path $ldapGroupsCsvPath -NoTypeInformation
 $selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name = 'loginDomain'; Expression = { 'NO' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }
 # Select specific properties from LDAP groups and add local user-specific properties with default values
 $selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
-# Combine selected local users and LDAP groups into a single array
-$selectedUsers = $selectedLocalUsers + $selectedLdapGroups
+# Combine all local users and LDAP groups into a single array
+$combinedUsers = $selectedLocalUsers + $selectedLdapGroups
+# Export the combined users to an Excel file
+$combinedUsers | Export-Excel -Path $combinedUsersExcelPath
 # Define Close-ExcelFile function to close the Excel file if it is open
 function Close-ExcelFile {
     param (
