@@ -366,6 +366,17 @@ $ws.Cells[$titleRowRange].Style.Fill.BackgroundColor.SetColor([System.Drawing.Co
 $ws.Cells[$titleRowRange].Style.Font.Color.SetColor([System.Drawing.Color]::White)
 $ws.Cells[$titleRowRange].Style.Font.Size = 12
 $ws.Cells[$titleRowRange].Style.Font.Bold = $false
+#----------------------------------------------
+# Get the last row
+$lastRow = $ws.Dimension.End.Row
+
+# Construct the range for the data (excluding the first row)
+$dataRange = "A2:$lastColumn" + $lastRow
+
+# Add a table to the data range with the specified style
+$table = $ws.Tables.Add($ws.Cells[$dataRange], "Table1")
+$table.TableStyle = "TableStyleMedium2"
+#----------------------------------------------
 $FormattedExcelFile.Save()
 $FormattedExcelFile.Dispose()
 # Just before calling Complete-Logging
