@@ -184,7 +184,8 @@ if (Test-Path -Path $csvDir) {
     write-host " $csvDir" -ForegroundColor Yellow
     # Write a message to the log file
     Write-Log -Message "CSV directory already exists at $csvDir" -Level "Info" -NoConsoleOutput
-} else {
+}
+else {
     # Write a message to the console
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "CSV directory does not exist." -NoNewline -ForegroundColor Red
@@ -207,7 +208,8 @@ if (Test-Path -Path $excelDir) {
     write-host " $excelDir" -ForegroundColor Yellow
     # Write a message to the log file
     Write-Log -Message "Excel directory already exists at $excelDir" -Level "Info" -NoConsoleOutput
-} else {
+}
+else {
     # Write a message to the console
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "Excel directory does not exist at" -NoNewline -ForegroundColor Red
@@ -311,32 +313,22 @@ function Close-ExcelFile {
         [string]$filePath
     )
     # Check if the file is open
-    $delay = 10
     while ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
         try {
             # Write a message to the console
-            Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The file " -NoNewline -ForegroundColor Yellow
-            Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
-            Write-Host " is currently open. Attempting to close it..." -ForegroundColor Yellow
+            Write-Host "`t• The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -ForegroundColor Yellow
             # Write the message to a log file
-            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -Level 'Warning' -NoConsoleOutput
+            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it at $(Get-Date)." -Level 'Warning' -NoConsoleOutput
             # Attempt to close the Excel file
             $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
-            $excelProcess | ForEach-Object { $_.Kill() }
-            # Wait for a moment to ensure the process has time to close
-            Start-Sleep -Seconds $delay
-            $delay = [math]::max(1, $delay - 1)
+            $excelProcess | ForEach-Object { $_.CloseMainWindow(); $_.WaitForExit(10000) }
         }
         catch {
             Write-Error "An error occurred while trying to close the Excel file: $_"
         }
     }
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "The file " -NoNewline -ForegroundColor DarkGray
-    Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
-    Write-Host "has been closed.`n" -ForegroundColor Green
-    Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed." -Level "OK" -NoConsoleOutput
+    Write-Host "`t• The file '$(Split-Path $filePath -Leaf)' has been closed.`n" -ForegroundColor Green
+    Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed at $(Get-Date)." -Level "OK" -NoConsoleOutput
 }
 # Call the function
 Close-ExcelFile -filePath $combinedUsersExcelPath
@@ -344,16 +336,6 @@ Close-ExcelFile -filePath $combinedUsersExcelPath
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, userName
 # Export the sorted user details to an Excel file
 $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter
-# Open Excel package
-$excelPackage = Open-ExcelPackage -Path $combinedUsersExcelPath
-# Set the worksheet name
-$Worksheet = $excelPackage.Workbook.Worksheets[0]
-# Set the worksheet title
-$Worksheet.Cells[1, 1].Value = "Users_details"
-# Set the worksheet title font size
-$Worksheet.Cells[1, 1].Style.Font.Size = 16
-# Set the worksheet title font color
-$Worksheet.Cells[1, 1].Style.Font.Color.SetColor([System.Drawing.Color]::FromArgb(255, 0, 0))
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
