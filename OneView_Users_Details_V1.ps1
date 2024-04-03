@@ -373,10 +373,7 @@ $lastRow = $ws.Dimension.End.Row
 # Get the last column of the used range
 $lastColumn = $ws.Dimension.End.Column
 
-# Construct the range for the data (excluding the first row)
-$startCell = $ws.Cells[2, 1]
-$endCell = $ws.Cells[$lastRow, $lastColumn]
-$dataRange = $ws.Cells[$startCell, $endCell]
+$dataRange = $ws.Cells[2, 1, $lastRow, $lastColumn]
 
 # Add a table to the data range with the specified style
 $table = $ws.Tables.Add($dataRange, "Table1")
