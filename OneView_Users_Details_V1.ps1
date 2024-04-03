@@ -291,13 +291,13 @@ $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 # Export the local users to a CSV file
-$allLocalUsers | Export-Csv -Path $localUsersCsvPath -NoTypeInformation
+$allLocalUsersCsv | Export-Csv -Path $localUsersCsvPath -NoTypeInformation
 # Export the LDAP groups to a CSV file
-$allLdapGroups | Export-Csv -Path $ldapGroupsCsvPath -NoTypeInformation
+$allLdapGroupsCsv | Export-Csv -Path $ldapGroupsCsvPath -NoTypeInformation
 # Select specific properties from local users and add LDAP group-specific properties with default values
-$selectedLocalUsers = $allLocalUsers | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name = 'loginDomain'; Expression = { 'NO' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }
+$selectedLocalUsers = $allLocalUsersCsv | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name = 'loginDomain'; Expression = { 'NO' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }
 # Select specific properties from LDAP groups and add local user-specific properties with default values
-$selectedLdapGroups = $allLdapGroups | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
+$selectedLdapGroups = $allLdapGroupsCsv | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
 # Combine all local users and LDAP groups into a single array
 $combinedUsers = $selectedLocalUsers + $selectedLdapGroups
 # Export the combined users to an Excel file
