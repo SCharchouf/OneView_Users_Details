@@ -373,11 +373,21 @@ $lastRow = $ws.Dimension.End.Row
 # Get the last column of the used range
 $lastColumn = $ws.Dimension.End.Column
 
+# Construct the range for the data (excluding the first row)
 $dataRange = $ws.Cells[2, 1, $lastRow, $lastColumn]
 
-# Add a table to the data range with the specified style
-$table = $ws.Tables.Add($dataRange, "Table1")
-$table.TableStyle = "Medium2"
+# Check if the data range is valid
+if ($null -eq $dataRange) {
+    Write-Host "Data range is null"
+} else {
+    # Add a table to the data range with the specified style
+    try {
+        $table = $ws.Tables.Add($dataRange, "Table1")
+        $table.TableStyle = "Medium2"
+    } catch {
+        Write-Host "Error adding table or setting style: $_"
+    }
+}
 #----------------------------------------------
 $FormattedExcelFile.Save()
 $FormattedExcelFile.Dispose()
