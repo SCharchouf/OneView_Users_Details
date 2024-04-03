@@ -320,9 +320,7 @@ function Close-ExcelFile {
             Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -Level 'Warning' -NoConsoleOutput
             # Attempt to close the Excel file
             $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
-            $excelProcess | ForEach-Object { $_.CloseMainWindow() | Out-Null }
-            # Wait for the Excel process to exit
-            $excelProcess | ForEach-Object { $_.WaitForExit() }
+            $excelProcess | ForEach-Object { $_.Kill() }
             # Wait for a moment to ensure the process has time to close
             Start-Sleep -Seconds $delay
             $delay = [math]::max(1, $delay - 1)
