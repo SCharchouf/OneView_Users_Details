@@ -343,7 +343,7 @@ Close-ExcelFile -filePath $combinedUsersExcelPath
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, userName
 # Export the sorted user details to an Excel file
-$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter
+$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -TabColor Yellow -TitleBackgroundColor Blue -TitleFontColor "White" -TitleFontSize 12 -BoldTopRow
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
