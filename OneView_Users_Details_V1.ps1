@@ -345,11 +345,21 @@ $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, userNam
 # Export the sorted user details to an Excel file
 $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -TabColor Yellow -PassThru
 # ------------------------------------------------------------
+function Convert-ToColumnName($number) {
+    $columnName = ""
+    while ($number -gt 0) {
+        $mod = ($number - 1) % 26
+        $columnName = [char](65 + $mod) + $columnName
+        $number = [math]::Floor(($number - $mod) / 26)
+    }
+    return $columnName
+}
 # Get the number of properties
-$propertyCount = $sortedCombinedUsers[0].PSObject.Properties.Length
+$propertyCount = ($sortedCombinedUsers | Get-Member -MemberType NoteProperty).Count
+write-host "Property Count: $propertyCount"
 
 # Convert the number of properties to the corresponding Excel column letter
-$columnLetter = [char](64 + $propertyCount)
+$columnLetter = Convert-ToColumnName $propertyCount
 
 # Construct the range for the title row
 $titleRowRange = "A1:$columnLetter" + "1"
