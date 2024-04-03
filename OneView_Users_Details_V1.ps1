@@ -343,7 +343,28 @@ Close-ExcelFile -filePath $combinedUsersExcelPath
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, userName
 # Export the sorted user details to an Excel file
-$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -TabColor Yellow -TitleBackgroundColor Blue -TitleFontColor "White" -TitleFontSize 12 -BoldTopRow
+$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -TabColor Yellow -PassThru
+# ------------------------------------------------------------
+# Get the number of properties
+$propertyCount = $sortedCombinedUsers[0].PSObject.Properties.Length
+
+# Convert the number of properties to the corresponding Excel column letter
+$columnLetter = [char](64 + $propertyCount)
+
+# Construct the range for the title row
+$titleRowRange = "A1:$columnLetter" + "1"
+
+# Format the title row
+$excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -TabColor Yellow -PassThru
+$ws = $excel.Workbook.Worksheets["CombinedUsers"]
+$ws.Cells[$titleRowRange].Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
+$ws.Cells[$titleRowRange].Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::Blue)
+$ws.Cells[$titleRowRange].Style.Font.Color.SetColor([System.Drawing.Color]::White)
+$ws.Cells[$titleRowRange].Style.Font.Size = 12
+$ws.Cells[$titleRowRange].Style.Font.Bold = $true
+$excel.Save()
+$excel.Dispose()
+# ------------------------------------------------------------
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
