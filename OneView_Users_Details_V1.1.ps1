@@ -124,34 +124,8 @@ $parentDirectory = Split-Path -Path $scriptDirectory -Parent
 # Create the full path to the CSV file
 $csvFilePath = Join-Path -Path $parentDirectory -ChildPath $csvFileName
 # Define the path to the credential folder
-$credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "Credential"
-# Check if the credential folder exists, if not say it at console and create it, if already exist say it at console
-if (Test-Path -Path $credentialFolder) {
-    # Write a message to the console
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "Credential folder already exists at:" -NoNewline -ForegroundColor DarkGray
-    Write-Host " $credentialFolder" -ForegroundColor Yellow
-    # Write a message to the log file
-    Write-Log -Message "Credential folder already exists at $credentialFolder" -Level "Info" -NoConsoleOutput
-}
-else {
-    # Write a message to the console
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "Credential folder does not exist." -NoNewline -ForegroundColor Red
-    Write-Host " Creating now..." -ForegroundColor DarkGray
-    Write-Log -Message "Credential folder does not exist, creating now..." -Level "Info" -NoConsoleOutput
-    # Create the credential folder if it does not exist already
-    New-Item -ItemType Directory -Path $credentialFolder | Out-Null
-    # Write a message to the console
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "Credential folder created at:" -NoNewline -ForegroundColor DarkGray
-    Write-Host " $credentialFolder" -ForegroundColor Green
-    # Write a message to the log file
-    Write-Log -Message "Credential folder created at $credentialFolder" -Level "OK" -NoConsoleOutput
-}
-# Define the path to the credential file
-$credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
-# Second Task import Appliances list from the CSV file and loop through each appliance to collect user details.
+$credentialFolder = Join-Path -Path $parentDirectory -ChildPath "Credential"
+# Task 2: import Appliances list from the CSV file.
 Write-Host "`n$Spaces$($taskNumber). Importing Appliances list from the CSV file:`n" -ForegroundColor Cyan
 # Import Appliances list from CSV file
 $Appliances = Import-Csv -Path $csvFilePath
@@ -181,7 +155,39 @@ else {
 }
 # increment $script:taskNumber after the function call
 $script:taskNumber++
-# Third Task : Loop through each appliance
+# Task 3: Check if credential folder exists
+Write-Host "`n$Spaces$($taskNumber). Checking for crential folder:`n" -ForegroundColor Cyan
+# Log the task
+Write-Log -Message "Checking for credential folder." -Level "Info" -NoConsoleOutput
+# Check if the credential folder exists, if not say it at console and create it, if already exist say it at console
+if (Test-Path -Path $credentialFolder) {
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Credential folder already exists at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $credentialFolder" -ForegroundColor Yellow
+    # Write a message to the log file
+    Write-Log -Message "Credential folder already exists at $credentialFolder" -Level "Info" -NoConsoleOutput
+}
+else {
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Credential folder does not exist." -NoNewline -ForegroundColor Red
+    Write-Host " Creating now..." -ForegroundColor DarkGray
+    Write-Log -Message "Credential folder does not exist, creating now..." -Level "Info" -NoConsoleOutput
+    # Create the credential folder if it does not exist already
+    New-Item -ItemType Directory -Path $credentialFolder | Out-Null
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Credential folder created at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $credentialFolder" -ForegroundColor Green
+    # Write a message to the log file
+    Write-Log -Message "Credential folder created at $credentialFolder" -Level "OK" -NoConsoleOutput
+}
+# Define the path to the credential file
+$credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
+# increment $script:taskNumber after the function call
+$script:taskNumber++
+# Task 4: Loop through each appliance & Collect users details.
 Write-Host "`n$Spaces$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Cyan
 # Check if the credential file exists
 if (-not (Test-Path -Path $credentialFile)) {
@@ -194,70 +200,9 @@ else {
     # Load the credential from the credential file
     $credential = Import-Clixml -Path $credentialFile
 }
-# Initialize arrays
-$allLocalUsers = @()
-$allLdapGroups = @()
-# Define the directories for the CSV and Excel files
-$csvDir = Join-Path -Path $script:ReportsDir -ChildPath 'CSV'
-$excelDir = Join-Path -Path $script:ReportsDir -ChildPath 'Excel'
 # increment $script:taskNumber after the function call
 $script:taskNumber++
-# Fourth Task : Check if the CSV and Excel directories exist, if not create them
-# Check if the CSV directory exists
-if (Test-Path -Path $csvDir) {
-    # Write a message to the console
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "CSV directory already exists at:" -NoNewline -ForegroundColor DarkGray
-    write-host " $csvDir" -ForegroundColor Yellow
-    # Write a message to the log file
-    Write-Log -Message "CSV directory already exists at $csvDir" -Level "Info" -NoConsoleOutput
-}
-else {
-    # Write a message to the console
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "CSV directory does not exist." -NoNewline -ForegroundColor Red
-    Write-Host " Creating now..." -ForegroundColor DarkGray
-    Write-Log -Message "CSV directory does not exist, creating now..." -Level "Info" -NoConsoleOutput
-    # Create the CSV directory if it does not exist already
-    New-Item -ItemType Directory -Path $csvDir | Out-Null
-    # Write a message to the console
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "CSV directory created at:" -NoNewline -ForegroundColor DarkGray
-    Write-Host " $csvDir" -ForegroundColor Green
-    # Write a message to the log file
-    Write-Log -Message "CSV directory created at $csvDir" -Level "OK" -NoConsoleOutput
-}
-# Check if the Excel directory exists
-if (Test-Path -Path $excelDir) {
-    # Write a message to the console
-    write-host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "Excel directory already exists at:" -NoNewline -ForegroundColor DarkGray
-    write-host " $excelDir" -ForegroundColor Yellow
-    # Write a message to the log file
-    Write-Log -Message "Excel directory already exists at $excelDir" -Level "Info" -NoConsoleOutput
-}
-else {
-    # Write a message to the console
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "Excel directory does not exist at" -NoNewline -ForegroundColor Red
-    Write-Host " $excelDir" -ForegroundColor DarkGray
-    # Write a message to the log file
-    Write-Log -Message "Excel directory does not exist at $excelDir, creating now..." -Level "Info" -NoConsoleOutput
-    # Create the Excel directory if it does not exist already
-    New-Item -ItemType Directory -Path $excelDir | Out-Null
-    # Write a message to the console
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "Excel directory created at:" -NoNewline -ForegroundColor DarkGray
-    Write-Host " $excelDir" -ForegroundColor Green
-    # Write a message to the log file
-    Write-Log -Message "Excel directory created at $excelDir" -Level "OK" -NoConsoleOutput
-}
-# Define the path to the CSV and Excel files for local users and LDAP groups
-$localUsersCsvPath = Join-Path -Path $csvDir -ChildPath 'LocalUsers.csv'
-$ldapGroupsCsvPath = Join-Path -Path $csvDir -ChildPath 'LdapGroups.csv'
-$localUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'LocalUsers.xlsx'
-$ldapGroupsExcelPath = Join-Path -Path $excelDir -ChildPath 'LdapGroups.xlsx'
-$combinedUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'CombinedUsers.xlsx'
+Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
@@ -313,7 +258,7 @@ foreach ($appliance in $Appliances) {
 }
 # increment $script:taskNumber after the function call
 $script:taskNumber++
-# Fifth Task : Assembling the Excel file
+# Task 5: Assembling the Excel file
 Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
