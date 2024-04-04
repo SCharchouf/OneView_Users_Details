@@ -366,29 +366,8 @@ $ws.Cells[$titleRowRange].Style.Fill.BackgroundColor.SetColor([System.Drawing.Co
 $ws.Cells[$titleRowRange].Style.Font.Color.SetColor([System.Drawing.Color]::White)
 $ws.Cells[$titleRowRange].Style.Font.Size = 12
 $ws.Cells[$titleRowRange].Style.Font.Bold = $false
-#----------------------------------------------
-# Get the last row of the used range
-$lastRow = $ws.Dimension.End.Row
-
-# Get the last column of the used range
-$lastColumn = $ws.Dimension.End.Column
-
-# Construct the range for the data (excluding the first row)
-$dataRange = $ws.Cells[2, 1, $lastRow, $lastColumn]
-
-# Check if the data range is valid
-if ($null -eq $dataRange) {
-    Write-Host "Data range is null"
-} else {
-    # Add a table to the data range with the specified style
-    try {
-        $table = $ws.Tables.Add($dataRange, "Table1")
-        $table.TableStyle = "Medium2"
-    } catch {
-        Write-Host "Error adding table or setting style: $_"
-    }
-}
-#----------------------------------------------
+$ws.Cells[$titleRowRange].Style.HorizontalAlignment = [OfficeOpenXml.Style.ExcelHorizontalAlignment]::Center
+$ws.Cells[$titleRowRange].Style.VerticalAlignment = [OfficeOpenXml.Style.ExcelVerticalAlignment]::Center
 $FormattedExcelFile.Save()
 $FormattedExcelFile.Dispose()
 # Just before calling Complete-Logging
