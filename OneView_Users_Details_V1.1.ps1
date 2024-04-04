@@ -200,6 +200,67 @@ else {
     # Load the credential from the credential file
     $credential = Import-Clixml -Path $credentialFile
 }
+# Initialize arrays
+$allLocalUsers = @()
+$allLdapGroups = @()
+# Define the directories for the CSV and Excel files
+$csvDir = Join-Path -Path $script:ReportsDir -ChildPath 'CSV'
+$excelDir = Join-Path -Path $script:ReportsDir -ChildPath 'Excel'
+# Check if the CSV directory exists
+if (Test-Path -Path $csvDir) {
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "CSV directory already exists at:" -NoNewline -ForegroundColor DarkGray
+    write-host " $csvDir" -ForegroundColor Yellow
+    # Write a message to the log file
+    Write-Log -Message "CSV directory already exists at $csvDir" -Level "Info" -NoConsoleOutput
+}
+else {
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "CSV directory does not exist." -NoNewline -ForegroundColor Red
+    Write-Host " Creating now..." -ForegroundColor DarkGray
+    Write-Log -Message "CSV directory does not exist, creating now..." -Level "Info" -NoConsoleOutput
+    # Create the CSV directory if it does not exist already
+    New-Item -ItemType Directory -Path $csvDir | Out-Null
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "CSV directory created at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $csvDir" -ForegroundColor Green
+    # Write a message to the log file
+    Write-Log -Message "CSV directory created at $csvDir" -Level "OK" -NoConsoleOutput
+}
+# Check if the Excel directory exists
+if (Test-Path -Path $excelDir) {
+    # Write a message to the console
+    write-host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Excel directory already exists at:" -NoNewline -ForegroundColor DarkGray
+    write-host " $excelDir" -ForegroundColor Yellow
+    # Write a message to the log file
+    Write-Log -Message "Excel directory already exists at $excelDir" -Level "Info" -NoConsoleOutput
+}
+else {
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Excel directory does not exist at" -NoNewline -ForegroundColor Red
+    Write-Host " $excelDir" -ForegroundColor DarkGray
+    # Write a message to the log file
+    Write-Log -Message "Excel directory does not exist at $excelDir, creating now..." -Level "Info" -NoConsoleOutput
+    # Create the Excel directory if it does not exist already
+    New-Item -ItemType Directory -Path $excelDir | Out-Null
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Excel directory created at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $excelDir" -ForegroundColor Green
+    # Write a message to the log file
+    Write-Log -Message "Excel directory created at $excelDir" -Level "OK" -NoConsoleOutput
+}
+# Define the path to the CSV and Excel files for local users and LDAP groups
+$localUsersCsvPath = Join-Path -Path $csvDir -ChildPath 'LocalUsers.csv'
+$ldapGroupsCsvPath = Join-Path -Path $csvDir -ChildPath 'LdapGroups.csv'
+$localUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'LocalUsers.xlsx'
+$ldapGroupsExcelPath = Join-Path -Path $excelDir -ChildPath 'LdapGroups.xlsx'
+$combinedUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'CombinedUsers.xlsx'
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
