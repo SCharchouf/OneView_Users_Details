@@ -377,34 +377,8 @@ function Close-ExcelFile {
 }
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
-# Define the function to convert a number to an Excel column name
-function Convert-ToColumnName($number) {
-    $columnName = ""
-    while ($number -gt 0) {
-        $mod = ($number - 1) % 26
-        $columnName = [char](65 + $mod) + $columnName
-        $number = [math]::Floor(($number - $mod) / 26)
-    }
-    return $columnName
-}
-# Get the number of properties
-$propertyCount = ($sortedCombinedUsers | Get-Member -MemberType NoteProperty).Count
-# Convert the number of properties to the corresponding Excel column letter
-$columnLetter = Convert-ToColumnName $propertyCount
-# Construct the range for the title row
-$titleRowRange = "A1:$columnLetter" + "1"
-# Format the title row that contains
-$FormattedExcelFile = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -PassThru
-$ws = $FormattedExcelFile.Workbook.Worksheets["CombinedUsers"]
-$ws.Cells[$titleRowRange].Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
-$ws.Cells[$titleRowRange].Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::DarkBlue)
-$ws.Cells[$titleRowRange].Style.Font.Color.SetColor([System.Drawing.Color]::White)
-$ws.Cells[$titleRowRange].Style.Font.Size = 12
-$ws.Cells[$titleRowRange].Style.Font.Bold = $false
-$ws.Cells[$titleRowRange].Style.HorizontalAlignment = [OfficeOpenXml.Style.ExcelHorizontalAlignment]::Left
-$ws.Cells[$titleRowRange].Style.VerticalAlignment = [OfficeOpenXml.Style.ExcelVerticalAlignment]::Center
-$FormattedExcelFile.Save()
-$FormattedExcelFile.Dispose()
+# Export the combined users to an Excel file
+$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -Show -WorksheetName "CombinedUsers" -PassThru
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
