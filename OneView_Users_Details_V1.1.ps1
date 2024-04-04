@@ -200,6 +200,9 @@ $allLdapGroups = @()
 # Define the directories for the CSV and Excel files
 $csvDir = Join-Path -Path $script:ReportsDir -ChildPath 'CSV'
 $excelDir = Join-Path -Path $script:ReportsDir -ChildPath 'Excel'
+# increment $script:taskNumber after the function call
+$script:taskNumber++
+# Fourth Task : Check if the CSV and Excel directories exist, if not create them
 # Check if the CSV directory exists
 if (Test-Path -Path $csvDir) {
     # Write a message to the console
@@ -310,7 +313,7 @@ foreach ($appliance in $Appliances) {
 }
 # increment $script:taskNumber after the function call
 $script:taskNumber++
-# Fourth Task : Assembling the Excel file
+# Fifth Task : Assembling the Excel file
 Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
@@ -329,41 +332,41 @@ $selectedLocalUsers = $allLocalUsersCsv | Select-Object ApplianceConnection, typ
 $selectedLdapGroups = $allLdapGroupsCsv | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
 # Combine all local users and LDAP groups into a single array
 $combinedUsers = $selectedLocalUsers + $selectedLdapGroups
-# Define Close-ExcelFile function to close the Excel file if it is open 
+# Define Close-ExcelFile function to close the Excel file if it is open, if not open says it at console
 function Close-ExcelFile {
     param (
-        [string]$filePath
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ExcelFilePath
     )
-    # Check if the file is open
-    $delay = 10
-    while ((Test-Path $filePath) -and (Get-Process excel -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" })) {
-        try {
+    try {
+        # Check if the Excel file is open
+        $excelFile = Get-Process | Where-Object { $_.MainWindowTitle -eq $ExcelFilePath }
+        if ($excelFile) {
+            # Close the Excel file
+            $excelFile | Stop-Process -Force
             # Write a message to the console
             Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The file " -NoNewline -ForegroundColor Yellow
-            Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
-            Write-Host " is currently open. Attempting to close it..." -ForegroundColor Yellow
-            # Write the message to a log file
-            Write-Log -Message "The file '$(Split-Path $filePath -Leaf)' is currently open. Attempting to close it..." -Level 'Warning' -NoConsoleOutput
-            # Attempt to close the Excel file
-            $excelProcess = Get-Process excel | Where-Object { $_.MainWindowTitle -like "*$(Split-Path $filePath -Leaf)*" }
-            $excelProcess | ForEach-Object { $_.CloseMainWindow() | Out-Null }
-            # Wait for a moment to ensure the process has time to close
-            Start-Sleep -Seconds $delay
-            $delay = [math]::max(1, $delay - 1)
+            Write-Host "The Excel file is open and has been closed." -ForegroundColor Green
+            # Write a message to the log file
+            Write-Log -Message "The Excel file is open and has been closed." -Level "OK" -NoConsoleOutput
         }
-        catch {
-            Write-Error "An error occurred while trying to close the Excel file: $_"
+        else {
+            # Write a message to the console
+            Write-Host "`t• " -NoNewline -ForegroundColor White
+            Write-Host "The Excel file is not open." -ForegroundColor Yellow
+            # Write a message to the log file
+            Write-Log -Message "The Excel file is not open." -Level "Info" -NoConsoleOutput
         }
     }
-    Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "The file " -NoNewline -ForegroundColor DarkGray
-    Write-Host "'$(Split-Path $filePath -Leaf)'" -NoNewline -ForegroundColor Cyan
-    Write-Host " has been closed.`n" -ForegroundColor Green
-    Write-Log "The file '$(Split-Path $filePath -Leaf)' has been closed." -Level "OK" -NoConsoleOutput
+    catch {
+        # Write an error message to the console
+        Write-Host "`t• " -NoNewline -ForegroundColor White
+        Write-Host "Failed to close the Excel file: $_" -ForegroundColor Red
+        # Write an error message to the log file
+        Write-Log -Message "Failed to close the Excel file: $_" -Level "Error" -NoConsoleOutput
+    }
 }
-# Call the function
-Close-ExcelFile -filePath $combinedUsersExcelPath
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Define the function to convert a number to an Excel column name
