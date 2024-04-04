@@ -321,7 +321,7 @@ foreach ($appliance in $Appliances) {
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 6: Exporting user details to CSV and Excel files
-Write-Host "`n$Spaces$($taskNumber). CExporting user details to CSV and Excel files:`n" -ForegroundColor Cyan
+Write-Host "`n$Spaces$($taskNumber). Exporting user details to CSV and Excel files:`n" -ForegroundColor Cyan
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
@@ -346,6 +346,7 @@ function Close-ExcelFile {
         [ValidateNotNullOrEmpty()]
         [string]$ExcelFilePath
     )
+
     try {
         # Check if the Excel file is open
         $excelFile = Get-Process | Where-Object { $_.MainWindowTitle -eq $ExcelFilePath }
@@ -354,16 +355,16 @@ function Close-ExcelFile {
             $excelFile | Stop-Process -Force
             # Write a message to the console
             Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The Excel file is open and has been closed." -ForegroundColor Green
+            Write-Host "The Excel file was open and has been closed." -ForegroundColor Green
             # Write a message to the log file
-            Write-Log -Message "The Excel file is open and has been closed." -Level "OK" -NoConsoleOutput
+            Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
         }
         else {
             # Write a message to the console
             Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The Excel file is not open." -ForegroundColor Yellow
+            Write-Host "The Excel file was already closed." -ForegroundColor Yellow
             # Write a message to the log file
-            Write-Log -Message "The Excel file is not open." -Level "Info" -NoConsoleOutput
+            Write-Log -Message "The Excel file was already closed." -Level "Info" -NoConsoleOutput
         }
     }
     catch {
