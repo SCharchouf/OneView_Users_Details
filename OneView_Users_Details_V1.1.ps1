@@ -156,7 +156,7 @@ else {
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 3: Check if credential folder exists
-Write-Host "`n$Spaces$($taskNumber). Checking for crential folder:`n" -ForegroundColor Cyan
+Write-Host "`n$Spaces$($taskNumber). Checking for credential folder:`n" -ForegroundColor Cyan
 # Log the task
 Write-Log -Message "Checking for credential folder." -Level "Info" -NoConsoleOutput
 # Check if the credential folder exists, if not say it at console and create it, if already exist say it at console
@@ -187,8 +187,8 @@ else {
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 # increment $script:taskNumber after the function call
 $script:taskNumber++
-# Task 4: Loop through each appliance & Collect users details.
-Write-Host "`n$Spaces$($taskNumber). Loop through each appliance & Collect users details:`n" -ForegroundColor Cyan
+# Task 4: Check CSV & Excel Folders exists.
+Write-Host "`n$Spaces$($taskNumber). Check CSV & Excel Folders exists:`n" -ForegroundColor Cyan
 # Check if the credential file exists
 if (-not (Test-Path -Path $credentialFile)) {
     # Prompt the user to enter their login and password
@@ -263,7 +263,8 @@ $ldapGroupsExcelPath = Join-Path -Path $excelDir -ChildPath 'LdapGroups.xlsx'
 $combinedUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'CombinedUsers.xlsx'
 # increment $script:taskNumber after the function call
 $script:taskNumber++
-Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
+# Task 5: Collecting user details from each appliance
+Write-Host "`n$Spaces$($taskNumber). Collecting user details from each appliance:`n" -ForegroundColor Cyan
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
@@ -319,8 +320,8 @@ foreach ($appliance in $Appliances) {
 }
 # increment $script:taskNumber after the function call
 $script:taskNumber++
-# Task 5: Assembling the Excel file
-Write-Host "`n$Spaces$($taskNumber). Assembling the Excel file:`n" -ForegroundColor Cyan
+# Task 6: Exporting user details to CSV and Excel files
+Write-Host "`n$Spaces$($taskNumber). CExporting user details to CSV and Excel files:`n" -ForegroundColor Cyan
 # Export the local users to an Excel file
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file
