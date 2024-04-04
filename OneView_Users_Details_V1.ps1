@@ -374,7 +374,7 @@ $loginDomainCell = $ws.Cells["1:1"] | Where-Object { $_.Text -eq 'loginDomain' }
 $loginDomainColumn = $loginDomainCell.Start.Column
 
 # Convert the column number to letter
-$loginDomainColumnLetter = [char]([int]'A' + $loginDomainColumn - 1)
+$loginDomainColumnLetter = [char]([int][char]'A' + $loginDomainColumn - 1)
 
 # Define the range for conditional formatting
 $conditionalFormatRange = "$loginDomainColumnLetter" + "2:$loginDomainColumnLetter" + $ws.Dimension.End.Row
