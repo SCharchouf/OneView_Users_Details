@@ -358,7 +358,7 @@ $propertyCount = ($sortedCombinedUsers | Get-Member -MemberType NoteProperty).Co
 $columnLetter = Convert-ToColumnName $propertyCount
 # Construct the range for the title row
 $titleRowRange = "A1:$columnLetter" + "1"
-# Format the title row that contains properties
+# Format the title row that contains
 $FormattedExcelFile = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -FreezeTopRow -AutoFilter -WorkSheetname "CombinedUsers" -PassThru
 $ws = $FormattedExcelFile.Workbook.Worksheets["CombinedUsers"]
 $ws.Cells[$titleRowRange].Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
@@ -368,23 +368,6 @@ $ws.Cells[$titleRowRange].Style.Font.Size = 12
 $ws.Cells[$titleRowRange].Style.Font.Bold = $false
 $ws.Cells[$titleRowRange].Style.HorizontalAlignment = [OfficeOpenXml.Style.ExcelHorizontalAlignment]::Left
 $ws.Cells[$titleRowRange].Style.VerticalAlignment = [OfficeOpenXml.Style.ExcelVerticalAlignment]::Center
-# ----------------------------------------------
-# Find the column number of 'loginDomain'
-$loginDomainCell = $ws.Cells["1:1"] | Where-Object { $_.Text -eq 'loginDomain' } | Select-Object -First 1
-$loginDomainColumn = $loginDomainCell.Start.Column
-
-# Convert the column number to letter
-$loginDomainColumnLetter = [char]([int][char]'A' + $loginDomainColumn - 1)
-
-# Define the range for conditional formatting
-$conditionalFormatRange = "$loginDomainColumnLetter" + "2:$loginDomainColumnLetter" + $ws.Dimension.End.Row
-
-# Add conditional formatting to the range for 'Local'
-Add-ConditionalFormatting -Worksheet $ws -Range $conditionalFormatRange -RuleType Equal -ConditionValue 'Local' -BackgroundColor Yellow -ForegroundColor Red
-
-# Add conditional formatting to the range for non-'Local'
-Add-ConditionalFormatting -Worksheet $ws -Range $conditionalFormatRange -RuleType NotEqual -ConditionValue 'Local' -BackgroundColor Blue -ForegroundColor White
-# ----------------------------------------------
 $FormattedExcelFile.Save()
 $FormattedExcelFile.Dispose()
 # Just before calling Complete-Logging
