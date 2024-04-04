@@ -370,7 +370,8 @@ $ws.Cells[$titleRowRange].Style.HorizontalAlignment = [OfficeOpenXml.Style.Excel
 $ws.Cells[$titleRowRange].Style.VerticalAlignment = [OfficeOpenXml.Style.ExcelVerticalAlignment]::Center
 # ----------------------------------------------
 # Find the column number of 'loginDomain'
-$loginDomainColumn = $ws.Cells["1:1"].First({$_.Text -eq 'loginDomain'}).Start.Column
+$loginDomainCell = $ws.Cells["1:1"] | Where-Object { $_.Text -eq 'loginDomain' } | Select-Object -First 1
+$loginDomainColumn = $loginDomainCell.Start.Column
 
 # Convert the column number to letter
 $loginDomainColumnLetter = [char]([int]'A' + $loginDomainColumn - 1)
