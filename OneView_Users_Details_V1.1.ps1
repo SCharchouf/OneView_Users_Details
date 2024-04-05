@@ -329,9 +329,11 @@ $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 # Assign the local users and LDAP groups to variables
 $allLocalUsersCsv = $allLocalUsers
 $allLdapGroupsCsv = $allLdapGroups
-# Export the local users to a CSV file
+# Export the local users to a CSV file, creating a new file named LocalUsers+Time.csv in the CSV Directory
+$localUsersCsvPath = Join-Path -Path $csvDir -ChildPath "LocalUsers_$((Get-Date).ToString('yyyyMMdd-HHmmss')).csv"
 $allLocalUsersCsv | Export-Csv -Path $localUsersCsvPath -NoTypeInformation
-# Export the LDAP groups to a CSV file
+# Export the LDAP groups to a CSV file, creating a new file named LdapGroups+Time.csv in the CSV Directory
+$ldapGroupsCsvPath = Join-Path -Path $csvDir -ChildPath "LdapGroups_$((Get-Date).ToString('yyyyMMdd-HHmmss')).csv"
 $allLdapGroupsCsv | Export-Csv -Path $ldapGroupsCsvPath -NoTypeInformation
 # Select specific properties from local users and add LDAP group-specific properties with default values
 $selectedLocalUsers = $allLocalUsersCsv | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name = 'loginDomain'; Expression = { 'Local' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }
@@ -375,6 +377,8 @@ function Close-ExcelFile {
         Write-Log -Message "Failed to close the Excel file: $_" -Level "Error" -NoConsoleOutput
     }
 }
+# Close the Excel file if it is open
+Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the combined users to an Excel file
