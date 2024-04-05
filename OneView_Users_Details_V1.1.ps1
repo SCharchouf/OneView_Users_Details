@@ -350,31 +350,25 @@ function Close-ExcelFile {
     )
 
     try {
-        # Check if the Excel file is open
-        $excelFile = Get-Process | Where-Object { $_.MainWindowTitle -eq $ExcelFilePath }
-        if ($excelFile) {
-            # Close the Excel file
-            $excelFile | Stop-Process -Force
-            # Write a message to the console
-            Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The Excel file was open and has been closed." -ForegroundColor Green
-            # Write a message to the log file
-            Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
-        }
-        else {
-            # Write a message to the console
+        # Try to open the file in ReadWrite mode
+        $fileStream = [System.IO.File]::Open($ExcelFilePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+        if ($fileStream) {
+            $fileStream.Close()
             Write-Host "`t• " -NoNewline -ForegroundColor White
             Write-Host "The Excel file was already closed." -ForegroundColor Yellow
-            # Write a message to the log file
             Write-Log -Message "The Excel file was already closed." -Level "Info" -NoConsoleOutput
         }
     }
     catch {
-        # Write an error message to the console
-        Write-Host "`t• " -NoNewline -ForegroundColor White
-        Write-Host "Failed to close the Excel file: $_" -ForegroundColor Red
-        # Write an error message to the log file
-        Write-Log -Message "Failed to close the Excel file: $_" -Level "Error" -NoConsoleOutput
+        # If an exception is thrown, the file is open
+        $excelFile = Get-Process | Where-Object { $_.MainWindowTitle -like "*Excel*" }
+        if ($excelFile) {
+            # Close the Excel file
+            $excelFile | Stop-Process -Force
+            Write-Host "`t• " -NoNewline -ForegroundColor White
+            Write-Host "The Excel file was open and has been closed." -ForegroundColor Green
+            Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
+        }
     }
 }
 # Close the Excel file if it is open
@@ -382,7 +376,9 @@ Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the combined users to an Excel file
-$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -Show -WorksheetName "CombinedUsers" -PassThru
+$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -Show -WorksheetName "CombinedUsers" -TableStyle Medium10 -PassThru
+# Display the path to the CSV and Excel files
+
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
