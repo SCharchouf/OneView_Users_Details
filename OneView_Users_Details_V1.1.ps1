@@ -299,14 +299,14 @@ foreach ($appliance in $Appliances) {
     Write-Host "`t2- Collecting user details from:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $fqdn"  -ForegroundColor Green
     $users = Get-OVUser | ForEach-Object {
-        $_ | Add-Member -NotePropertyName 'Role' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
+        $_ | Add-Member -NotePropertyName 'Type of user' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLocalUsers += $users
     # Collect LDAP group details
     Write-Host "`t3- Collecting LDAP group details from:" -NoNewline -ForegroundColor DarkGray
     Write-Host " $fqdn" -ForegroundColor Green
     $ldapGroups = Get-OVLdapGroup | ForEach-Object {
-        $_ | Add-Member -NotePropertyName 'Role' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
+        $_ | Add-Member -NotePropertyName 'Type of user' -NotePropertyValue ($_.permissions | ForEach-Object { $_.roleName }) -PassThru
     }
     $allLdapGroups += $ldapGroups
     # Generate reports
@@ -338,9 +338,9 @@ $allLocalUsersCsv | Export-Csv -Path $localUsersCsvPath -NoTypeInformation
 $ldapGroupsCsvPath = Join-Path -Path $csvDir -ChildPath "LdapGroups_$((Get-Date).ToString('yyyyMMdd-HHmmss')).csv"
 $allLdapGroupsCsv | Export-Csv -Path $ldapGroupsCsvPath -NoTypeInformation
 # Select specific properties from local users and add LDAP group-specific properties with default values
-$selectedLocalUsers = $allLocalUsersCsv | Select-Object ApplianceConnection, type, category, userName, fullName, Role, @{Name = 'loginDomain'; Expression = { 'Local' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }
+$selectedLocalUsers = $allLocalUsersCsv | Select-Object ApplianceConnection, type, category, userName, fullName, 'Type of user', @{Name = 'loginDomain'; Expression = { 'Local' } }, @{Name = 'egroup'; Expression = { 'N/A' } }, @{Name = 'directoryType'; Expression = { 'User' } }, uri
 # Select specific properties from LDAP groups and add local user-specific properties with default values
-$selectedLdapGroups = $allLdapGroupsCsv | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, Role, loginDomain, egroup, directoryType
+$selectedLdapGroups = $allLdapGroupsCsv | Select-Object ApplianceConnection, type, category, @{Name = 'userName'; Expression = { 'N/A' } }, @{Name = 'fullName'; Expression = { 'N/A' } }, 'Type of user', loginDomain, egroup, directoryType, uri
 # Combine all local users and LDAP groups into a single array
 $combinedUsers = $selectedLocalUsers + $selectedLdapGroups
 # Define Close-ExcelFile function to close the Excel file if it is open, if not open says it at console
