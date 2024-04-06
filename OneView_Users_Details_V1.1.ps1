@@ -380,8 +380,27 @@ Start-Sleep -Seconds 5
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the combined users to an Excel file
-$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -ClearSheet -AutoSize -AutoFilter -FreezeTopRow -WorksheetName "CombinedUsers" -TableStyle "Medium9"
-# Display the path to the CSV and Excel files
+$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
+    -ClearSheet `
+    -AutoSize `
+    -AutoFilter `
+    -FreezeTopRow `
+    -WorksheetName "CombinedUsers" `
+    -TableStyle "Medium9" `
+    -Title "Combined Users Report"
+    -PassThru
+
+    # Add custom styling to the title
+    $ws = $excel.Workbook.Worksheets["CombinedUsers"]
+    $titleRow = $ws.Dimension.Start.Row
+    $titleCell = $ws.Cells[$titleRow, 1]
+    $titleCell.Style.HorizontalAlignment = [OfficeOpenXml.Style.ExcelHorizontalAlignment]::Center
+    $titleCell.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
+    $titleCell.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::LightBlue)
+    
+    # Save and close the Excel package
+    $excel.Save()
+    $excel.Dispose()
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
