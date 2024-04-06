@@ -403,7 +403,7 @@ $titleCell.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
 $titleCell.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::LightBlue)
 
 # Set the font to a more formal style and increase the size
-$titleCell.Style.Font.SetFromFont((New-Object System.Drawing.Font "Calibri", 14, [System.Drawing.FontStyle]::Bold))
+$titleCell.Style.Font.SetFromFont((New-Object System.Drawing.Font("Calibri", 14, [System.Drawing.FontStyle]::Bold)))
 
 # Add a border around the title
 $titleCell.Style.Border.BorderAround([OfficeOpenXml.Style.ExcelBorderStyle]::Medium)
@@ -411,6 +411,7 @@ $titleCell.Style.Border.BorderAround([OfficeOpenXml.Style.ExcelBorderStyle]::Med
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
+
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
