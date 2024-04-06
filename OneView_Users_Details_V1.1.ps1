@@ -379,28 +379,38 @@ Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 Start-Sleep -Seconds 5
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
-# Export the combined users to an Excel file
-$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
+# Export the data to Excel
+$excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -ClearSheet `
     -AutoSize `
     -AutoFilter `
     -FreezeTopRow `
     -WorksheetName "CombinedUsers" `
     -TableStyle "Medium9" `
-    -Title "Combined Users Report"
+    -Title "Combined Users Report" `
     -PassThru
 
-    # Add custom styling to the title
-    $ws = $excel.Workbook.Worksheets["CombinedUsers"]
-    $titleRow = $ws.Dimension.Start.Row
-    $titleCell = $ws.Cells[$titleRow, 1]
-    $titleCell.Style.HorizontalAlignment = [OfficeOpenXml.Style.ExcelHorizontalAlignment]::Center
-    $titleCell.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
-    $titleCell.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::LightBlue)
-    
-    # Save and close the Excel package
-    $excel.Save()
-    $excel.Dispose()
+# Add custom styling to the title
+$ws = $excel.Workbook.Worksheets["CombinedUsers"]
+$titleRow = $ws.Dimension.Start.Row
+$titleCell = $ws.Cells[$titleRow, 1]
+
+# Set the horizontal alignment to center
+$titleCell.Style.HorizontalAlignment = [OfficeOpenXml.Style.ExcelHorizontalAlignment]::Center
+
+# Set the background color to a light blue
+$titleCell.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
+$titleCell.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::LightBlue)
+
+# Set the font to a more formal style and increase the size
+$titleCell.Style.Font.SetFromFont((New-Object System.Drawing.Font "Calibri", 14, [System.Drawing.FontStyle]::Bold))
+
+# Add a border around the title
+$titleCell.Style.Border.BorderAround([OfficeOpenXml.Style.ExcelBorderStyle]::Medium)
+
+# Save and close the Excel package
+$excel.Save()
+$excel.Dispose()
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
