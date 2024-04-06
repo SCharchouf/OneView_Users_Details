@@ -388,7 +388,6 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -WorksheetName "CombinedUsers" `
     -TableStyle "Medium9" `
     -Title "Combined Users Report" `
-    -TitleTop `
     -PassThru
 
 # Add custom styling to the title
@@ -408,9 +407,16 @@ $fontStyle = [System.Drawing.FontStyle]::Bold
 $font = New-Object System.Drawing.Font("Calibri", 14, $fontStyle)
 $titleCell.Style.Font.SetFromFont($font)
 
+# Determine the number of columns in the table
+$columnCount = $sortedCombinedUsers.PsObject.Properties.Count
+
+# Center the title across the table
+$ws.Cells[$titleRow, 1, $titleRow, $columnCount].Style.HorizontalAlignment = [OfficeOpenXml.Style.ExcelHorizontalAlignment]::Center
+
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
+
 
 # Just before calling Complete-Logging
 $endTime = Get-Date
