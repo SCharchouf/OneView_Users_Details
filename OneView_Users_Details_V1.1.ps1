@@ -403,7 +403,15 @@ $titleCell.Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
 $titleCell.Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::LightBlue)
 
 # Set the font to a more formal style and increase the size
-$titleCell.Style.Font.SetFromFont((New-Object System.Drawing.Font("Calibri", 14, [System.Drawing.FontStyle]::Bold)))
+$fontStyle = [System.Drawing.FontStyle]::Bold
+$font = New-Object System.Drawing.Font("Calibri", 14, $fontStyle)
+$titleCell.Style.Font.SetFromFont($font)
+
+# Determine the number of columns in the table
+$columnCount = $sortedCombinedUsers.PsObject.Properties.Count
+
+# Merge the cells in the title row
+$ws.Cells[$titleRow, 1, $titleRow, $columnCount].Merge = $true
 
 # Add a border around the title
 $titleCell.Style.Border.BorderAround([OfficeOpenXml.Style.ExcelBorderStyle]::Medium)
@@ -411,6 +419,7 @@ $titleCell.Style.Border.BorderAround([OfficeOpenXml.Style.ExcelBorderStyle]::Med
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
+
 
 
 # Just before calling Complete-Logging
