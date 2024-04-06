@@ -377,7 +377,7 @@ Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the combined users to an Excel file
 $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -Show -PassThru `
--WorksheetName "CombinedUsers" -ClearSheet -TableStyle "Medium1"
+-WorksheetName "CombinedUsers" -ClearSheet -TableStyle "Medium1" -Title "Combined Users Report" -TitleBackgroundColor "#FF0000" -TitleForegroundColor "#FFFFFF"
 
 # Display the path to the CSV and Excel files
 
