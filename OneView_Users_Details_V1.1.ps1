@@ -373,6 +373,8 @@ function Close-ExcelFile {
 }
 # Close the Excel file if it is open
 Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
+# Add a delay to ensure the Excel file is closed before exporting the data
+Start-Sleep -Seconds 5
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the combined users to an Excel file
