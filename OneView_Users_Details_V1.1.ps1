@@ -322,9 +322,11 @@ foreach ($appliance in $Appliances) {
 $script:taskNumber++
 # Task 6: Exporting user details to CSV and Excel files
 Write-Host "`n$Spaces$($taskNumber). Exporting user details to CSV and Excel files:`n" -ForegroundColor Cyan
-# Export the local users to an Excel file
+# Export the local users to an Excel file with timestamp
+$localUsersExcelPath = Join-Path -Path $excelDir -ChildPath "LocalUsers_$((Get-Date).ToString('yyyyMMdd-HHmmss')).xlsx"
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
-# Export the LDAP groups to an Excel file
+# Export the LDAP groups to an Excel file with timestamp
+$ldapGroupsExcelPath = Join-Path -Path $excelDir -ChildPath "LdapGroups_$((Get-Date).ToString('yyyyMMdd-HHmmss')).xlsx"
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
 # Assign the local users and LDAP groups to variables
 $allLocalUsersCsv = $allLocalUsers
@@ -378,9 +380,7 @@ Start-Sleep -Seconds 5
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the combined users to an Excel file
-$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -Show -PassThru `
--WorksheetName "CombinedUsers" -ClearSheet -TableStyle "Medium1" -Title "Combined Users Report" -TitleBackgroundColor "#FF0000" -TitleForegroundColor "#FFFFFF"
-
+$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -ClearSheet -AutoSize -AutoFilter -FreezeTopRow -WorksheetName "CombinedUsers" -TableStyle "Medium9"
 # Display the path to the CSV and Excel files
 
 # Just before calling Complete-Logging
