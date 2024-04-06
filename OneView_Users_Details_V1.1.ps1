@@ -377,24 +377,7 @@ Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the combined users to an Excel file
 $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -Show -PassThru `
--WorksheetName "CombinedUsers" -ClearSheet -Title "Combined Users Report" -TitleBold -TitleSize 16 `
--TitleBackgroundColor Yellow -TitleForegroundColor Black -TitleAlignment Center `
--TitleTopBorder -TitleBottomBorder -TitleLeftBorder -TitleRightBorder `
--TitleTopBorderColor Black -TitleBottomBorderColor Black -TitleLeftBorderColor Black -TitleRightBorderColor Black `
--TitleTopBorderStyle Continuous -TitleBottomBorderStyle Continuous -TitleLeftBorderStyle Continuous -TitleRightBorderStyle Continuous `
--TitleTopBorderWeight Medium -TitleBottomBorderWeight Medium -TitleLeftBorderWeight Medium -TitleRightBorderWeight Medium `
--TitleTopBorderBackgroundColor Black -TitleBottomBorderBackgroundColor Black -TitleLeftBorderBackgroundColor Black -TitleRightBorderBackgroundColor Black `
--TitleTopBorderForegroundColor Black -TitleBottomBorderForegroundColor Black -TitleLeftBorderForegroundColor Black -TitleRightBorderForegroundColor Black `
--TitleTopBorderAlignment Center -TitleBottomBorderAlignment Center -TitleLeftBorderAlignment Center -TitleRightBorderAlignment Center `
--TitleTopBorderSize 2 -TitleBottomBorderSize 2 -TitleLeftBorderSize 2 -TitleRightBorderSize 2 `
--TitleTopBorderLineStyle Continuous -TitleBottomBorderLineStyle Continuous -TitleLeftBorderLineStyle Continuous -TitleRightBorderLineStyle Continuous `
--TitleTopBorderWeight Medium -TitleBottomBorderWeight Medium -TitleLeftBorderWeight Medium -TitleRightBorderWeight Medium `
--TitleTopBorderBackgroundColor Black -TitleBottomBorderBackgroundColor Black -TitleLeftBorderBackgroundColor Black -TitleRightBorderBackgroundColor Black `
--TitleTopBorderForegroundColor Black -TitleBottomBorderForegroundColor Black -TitleLeftBorderForegroundColor Black -TitleRightBorderForegroundColor Black `
--TitleTopBorderAlignment Center -TitleBottomBorderAlignment Center -TitleLeftBorderAlignment Center -TitleRightBorderAlignment Center `
--TitleTopBorderSize 2 -TitleBottomBorderSize 2 -TitleLeftBorderSize 2 -TitleRightBorderSize 2 `
--TitleTopBorderLineStyle Continuous -TitleBottomBorderLineStyle Continuous -TitleLeftBorderLineStyle Continuous -TitleRightBorderLineStyle Continuous `
--Title "Test" -TableStyle "Medium1" -Show -AutoSize -AutoFilter -BoldTopRow -FreezeTopRow -PassThru
+-WorksheetName "CombinedUsers" -ClearSheet -TableStyle "Medium1"
 
 # Display the path to the CSV and Excel files
 
