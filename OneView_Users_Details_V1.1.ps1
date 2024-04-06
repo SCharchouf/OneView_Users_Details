@@ -379,40 +379,17 @@ Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 Start-Sleep -Seconds 5
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
+# Export the data to Excel
 $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
-  -ClearSheet `
-  -AutoSize `
-  -AutoFilter `
-  -FreezeTopRow `
-  -WorksheetName "CombinedUsers" `
-  -TableStyle "Medium9" `
-  -Title "Combined Users Report" `
-  -PassThru
+    -ClearSheet `
+    -AutoSize `
+    -AutoFilter `
+    -FreezeTopRow `
+    -WorksheetName "CombinedUsers" `
+    -TableStyle "Medium9" `
+    -PassThru
 
-# Get worksheet and table details
-$ws = $excel.Workbook.Worksheets["CombinedUsers"]
-$dataTable = $ws.ListObjects.FirstOrDefault($_.Name -eq "Table1") # Assuming table name is "Table1"
-
-# Determine number of columns in the table
-$tableWidth = $dataTable.Range.Columns.Count
-
-# Define title row and calculate merged range
-$titleRow = $ws.Dimension.Start.Row
-# Convert column number to letter
-$mergedRange = "A${titleRow}:" & Chr($tableWidth + 64) & ${titleRow}
-
-# Merge cells and center title
-$ws.Range($mergedRange).MergeCells = $true
-$ws.Range($mergedRange).HorizontalAlignment = [Excel.XlHAlign]::Center
-
-# Set title cell style (same as before)
-$ws.Cells[$titleRow, 1].Style.Fill.PatternType = [OfficeOpenXml.Style.ExcelFillStyle]::Solid
-$ws.Cells[$titleRow, 1].Style.Fill.BackgroundColor.SetColor([System.Drawing.Color]::LightBlue)
-
-$fontStyle = [System.Drawing.FontStyle]::Bold
-$font = New-Object System.Drawing.Font("Calibri", 14, $fontStyle)
-$ws.Cells[$titleRow, 1].Style.Font.SetFromFont($font)
-
+# Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
 
