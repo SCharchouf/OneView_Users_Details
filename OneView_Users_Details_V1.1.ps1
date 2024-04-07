@@ -406,6 +406,7 @@ $excel = $UserRolesPermissions | Export-Excel -ExcelPackage $excel -WorksheetNam
 $combinedUsersWorksheet = $excel.Workbook.Worksheets["CombinedUsers"]
 $userRolesPermissionsWorksheet = $excel.Workbook.Worksheets["UserRolesPermissions"]
 
+# Iterate over the 'Type of user' column in the $combinedUsers worksheet
 for ($i = 2; $i -le $combinedUsersWorksheet.Dimension.End.Row; $i++) {
     # Get the type of user
     $typeOfUser = $combinedUsersWorksheet.Cells[$i, "Type of user"].Value
@@ -414,7 +415,9 @@ for ($i = 2; $i -le $combinedUsersWorksheet.Dimension.End.Row; $i++) {
     for ($j = 2; $j -le $userRolesPermissionsWorksheet.Dimension.End.Row; $j++) {
         if ($userRolesPermissionsWorksheet.Cells[$j, "Type of user"].Value -eq $typeOfUser) {
             # Create a hyperlink to the UserRolesPermissions
-            $combinedUsersWorksheet.Cells[$i, "Type of user"].Hyperlink = New-Object -TypeName OfficeOpenXml.ExcelHyperLink -ArgumentList "UserRolesPermissions!A$j"
+            $hyperlink = New-Object -TypeName OfficeOpenXml.ExcelHyperLink -ArgumentList "UserRolesPermissions!A$j"
+            $hyperlink.Address = $userRolesPermissionsWorksheet.Cells[$j, "Type of user"].FullAddress
+            $combinedUsersWorksheet.Cells[$i, "Type of user"].Hyperlink = $hyperlink
             $combinedUsersWorksheet.Cells[$i, "Type of user"].Style.Font.UnderLine = $true
             $combinedUsersWorksheet.Cells[$i, "Type of user"].Style.Font.Color.SetColor([System.Drawing.Color]::Blue)
             break
