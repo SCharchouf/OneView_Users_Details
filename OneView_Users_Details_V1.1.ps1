@@ -357,7 +357,7 @@ function Close-ExcelFile {
         if ($fileStream) {
             $fileStream.Close()
             Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The Excel file was already closed." -ForegroundColor Yellow
+            Write-Host "The Excel file was already closed.`n" -ForegroundColor Yellow
             Write-Log -Message "The Excel file was already closed." -Level "Info" -NoConsoleOutput
         }
     }
@@ -368,7 +368,7 @@ function Close-ExcelFile {
             # Close the Excel file
             $excelFile | Stop-Process -Force
             Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The Excel file was open and has been closed." -ForegroundColor Green
+            Write-Host "The Excel file was open and has been closed.`n" -ForegroundColor Green
             Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
         }
     }
@@ -377,25 +377,41 @@ function Close-ExcelFile {
 Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 # Add a delay to ensure the Excel file is closed before exporting the data
 Start-Sleep -Seconds 5
-# Sort the combined users by ApplianceConnection and then by userName
-$sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
-# Export the data to Excel
-$excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
-    -ClearSheet `
-    -AutoSize `
-    -AutoFilter `
-    -FreezeTopRow `
-    -WorksheetName "CombinedUsers" `
-    -TableStyle "Medium9" `
-    -PassThru
+# Define the Excel file that include User roles and permissions document, it's stored in folder at same level of the script. Folder called "User_Roles_Permissions"
+$UserRolesPermissionsExcelPath = Join-Path -Path $parentDirectory -ChildPath "User_Roles_Permissions\User_Roles_Permissions.xlsx"
+# Define the variable to store the User Roles and Permissions Excel and import it
+$UserRolesPermissions = Import-Excel -Path $UserRolesPermissionsExcelPath
+
+# Add the UserRolesPermissions data into a new worksheet
+$excel = $UserRolesPermissions | Export-Excel -ExcelPackage $excel -WorksheetName "UserRolesPermissions" -PassThru
+
+# Iterate over the 'Type of user' column in the $combinedUsers worksheet
+$combinedUsersWorksheet = $excel.Workbook.Worksheets["CombinedUsers"]
+$userRolesPermissionsWorksheet = $excel.Workbook.Worksheets["UserRolesPermissions"]
+
+for ($i = 2; $i -le $combinedUsersWorksheet.Dimension.End.Row; $i++) {
+    # Get the type of user
+    $typeOfUser = $combinedUsersWorksheet.Cells[$i, "Type of user"].Value
+
+    # Find the corresponding row in the UserRolesPermissions worksheet
+    for ($j = 2; $j -le $userRolesPermissionsWorksheet.Dimension.End.Row; $j++) {
+        if ($userRolesPermissionsWorksheet.Cells[$j, "Type of user"].Value -eq $typeOfUser) {
+            # Create a hyperlink to the UserRolesPermissions
+            $combinedUsersWorksheet.Cells[$i, "Type of user"].Hyperlink = New-Object -TypeName OfficeOpenXml.ExcelHyperLink -ArgumentList "UserRolesPermissions!A$j"
+            $combinedUsersWorksheet.Cells[$i, "Type of user"].Style.Font.UnderLine = $true
+            $combinedUsersWorksheet.Cells[$i, "Type of user"].Style.Font.Color.SetColor([System.Drawing.Color]::Blue)
+            break
+        }
+    }
+}
 
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
 
-
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
+
 # Call Complete-Logging at the end of the script
 Complete-Logging -LogPath $script:LogPath -ErrorCount $ErrorCount -WarningCount $WarningCount -TotalRuntime $totalRuntime
