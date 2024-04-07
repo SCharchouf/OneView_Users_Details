@@ -377,12 +377,19 @@ function Close-ExcelFile {
 Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 # Add a delay to ensure the Excel file is closed before exporting the data
 Start-Sleep -Seconds 5
-# Define the Excel file that include User roles and permissions document, it's stored in folder at same level of the script. Folder called "User_Roles_Permissions"
-$UserRolesPermissionsExcelPath = Join-Path -Path $parentDirectory -ChildPath "User_Roles_Permissions\User_Roles_Permissions.xlsx"
-# Define the variable to store the User Roles and Permissions Excel and import it
-$UserRolesPermissions = Import-Excel -Path $UserRolesPermissionsExcelPath
+# Sort the combined users by ApplianceConnection and then by userName
+$sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
+# Export the data to Excel
+$excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
+    -ClearSheet `
+    -AutoSize `
+    -AutoFilter `
+    -FreezeTopRow `
+    -WorksheetName "CombinedUsers" `
+    -TableStyle "Medium9" `
+    -PassThru
 
-# Add the UserRolesPermissions data into a new worksheet
+# Add the UserRolesPermissions data into a new worksheet in the existing Excel package
 $excel = $UserRolesPermissions | Export-Excel -ExcelPackage $excel -WorksheetName "UserRolesPermissions" -PassThru
 
 # Iterate over the 'Type of user' column in the $combinedUsers worksheet
@@ -408,10 +415,8 @@ for ($i = 2; $i -le $combinedUsersWorksheet.Dimension.End.Row; $i++) {
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
-
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
-
 # Call Complete-Logging at the end of the script
 Complete-Logging -LogPath $script:LogPath -ErrorCount $ErrorCount -WarningCount $WarningCount -TotalRuntime $totalRuntime
