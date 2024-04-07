@@ -391,16 +391,19 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -AutoFilter `
     -FreezeTopRow `
     -WorksheetName "CombinedUsers" `
-    -TableStyle "Medium9" `
-    -PassThru
-
-# Add the UserRolesPermissions data into a new worksheet in the existing Excel package
-$excel = $UserRolesPermissions | Export-Excel -ExcelPackage $excel -WorksheetName "UserRolesPermissions" `
-    -AutoSize `
-    -AutoFilter `
-    -FreezeTopRow `
     -TableStyle "Medium11" `
     -PassThru
+# Check if the Excel file was created successfully
+if ($excel) {
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "The Excel file was created successfully." -ForegroundColor Green
+    Write-Log -Message "The Excel file was created successfully." -Level "OK" -NoConsoleOutput
+}
+else {
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Failed to create the Excel file." -ForegroundColor Red
+    Write-Log -Message "Failed to create the Excel file." -Level "Error" -NoConsoleOutput
+}
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
