@@ -22,7 +22,7 @@ Last Modified : $((Get-Item $PSCommandPath).LastWriteTime.ToString("dd/MM/yyyy")
 # Display the header information in the console with a design
 $consoleWidth = $Host.UI.RawUI.WindowSize.Width
 $line = "─" * ($consoleWidth - 2)
-Write-Host "+$line+" -ForegroundColor Cyan
+Write-Host "+$line+" -ForegroundColor DarkGray
 # Split the header into lines and display each part in different colors
 $HeaderMainScript -split "`n" | ForEach-Object {
     $parts = $_ -split ": ", 2
@@ -31,7 +31,7 @@ $HeaderMainScript -split "`n" | ForEach-Object {
     Write-Host ": " -NoNewline
     Write-Host $parts[1] -ForegroundColor Cyan
 }
-Write-Host "+$line+" -ForegroundColor Cyan
+Write-Host "+$line+" -ForegroundColor DarkGray
 # Check if the Logging_Functions.ps1 script exists
 if (Test-Path -Path $loggingFunctionsPath) {
     # Dot-source the Logging_Functions.ps1 script
@@ -401,7 +401,7 @@ else {
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
-Write-Host "+$line+" -ForegroundColor Cyan
+Write-Host "+$line+" -ForegroundColor DarkGray
 # Increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 7: Script execution completed successfully
