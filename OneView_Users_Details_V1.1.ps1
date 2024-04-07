@@ -403,12 +403,13 @@ else {
 $excel.Save()
 $excel.Dispose()
 Write-Host "+$line+" -ForegroundColor Cyan
+# Increment $script:taskNumber after the function call
+$script:taskNumber++
+# Task 7: Script execution completed successfully
 # write a message to the console
 Write-Host "`n$Spaces$($taskNumber). Script execution completed successfully.`n" -ForegroundColor Cyan
 # Log the successful completion of the script
 Write-Log -Message "Script execution completed successfully." -Level "OK" -NoConsoleOutput
-# Stop logging
-Stop-Log
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
