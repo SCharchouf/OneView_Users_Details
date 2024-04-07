@@ -350,7 +350,6 @@ function Close-ExcelFile {
         [ValidateNotNullOrEmpty()]
         [string]$ExcelFilePath
     )
-
     try {
         # Try to open the file in ReadWrite mode
         $fileStream = [System.IO.File]::Open($ExcelFilePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
