@@ -399,30 +399,8 @@ $excel = $UserRolesPermissions | Export-Excel -ExcelPackage $excel -WorksheetNam
     -AutoSize `
     -AutoFilter `
     -FreezeTopRow `
-    -TableStyle "Medium9" `
+    -TableStyle "Medium11" `
     -PassThru
-
-# Iterate over the 'Type of user' column in the $combinedUsers worksheet
-$combinedUsersWorksheet = $excel.Workbook.Worksheets["CombinedUsers"]
-$userRolesPermissionsWorksheet = $excel.Workbook.Worksheets["UserRolesPermissions"]
-
-# Iterate over the 'Type of user' column in the $combinedUsers worksheet
-for ($i = 2; $i -le $combinedUsersWorksheet.Dimension.End.Row; $i++) {
-    # Get the type of user
-    $typeOfUser = $combinedUsersWorksheet.Cells[$i, "Type of user"].Value
-
-    # Find the corresponding row in the UserRolesPermissions worksheet
-    for ($j = 2; $j -le $userRolesPermissionsWorksheet.Dimension.End.Row; $j++) {
-        if ($userRolesPermissionsWorksheet.Cells[$j, "Type of user"].Value -eq $typeOfUser) {
-            # Create a hyperlink to the UserRolesPermissions
-            $combinedUsersWorksheet.Cells[$i, "Type of user"].Formula = "=HYPERLINK(""#UserRolesPermissions!A$j"", ""$typeOfUser"")"
-            $combinedUsersWorksheet.Cells[$i, "Type of user"].Style.Font.UnderLine = $true
-            $combinedUsersWorksheet.Cells[$i, "Type of user"].Style.Font.Color.SetColor([System.Drawing.Color]::Blue)
-            break
-        }
-    }
-}
-
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
