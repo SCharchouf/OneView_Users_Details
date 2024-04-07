@@ -395,7 +395,12 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -PassThru
 
 # Add the UserRolesPermissions data into a new worksheet in the existing Excel package
-$excel = $UserRolesPermissions | Export-Excel -ExcelPackage $excel -WorksheetName "UserRolesPermissions" -PassThru
+$excel = $UserRolesPermissions | Export-Excel -ExcelPackage $excel -WorksheetName "UserRolesPermissions" `
+    -AutoSize `
+    -AutoFilter `
+    -FreezeTopRow `
+    -TableStyle "Medium9" `
+    -PassThru
 
 # Iterate over the 'Type of user' column in the $combinedUsers worksheet
 $combinedUsersWorksheet = $excel.Workbook.Worksheets["CombinedUsers"]
