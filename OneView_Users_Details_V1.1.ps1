@@ -377,11 +377,6 @@ function Close-ExcelFile {
 Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 # Add a delay to ensure the Excel file is closed before exporting the data
 Start-Sleep -Seconds 5
-# Define the Excel file that include User roles and permissions document, it's stored in folder at same level of the script. Folder called "User_Roles_Permissions"
-$UserRolesPermissionsExcelPath = Join-Path -Path $parentDirectory -ChildPath "User_Roles_Permissions\User_Roles_Permissions.xlsx"
-# Define the variable to store the User Roles and Permissions Excel and import it
-$UserRolesPermissions = Import-Excel -Path $UserRolesPermissionsExcelPath
-
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the data to Excel
@@ -396,17 +391,24 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
 # Check if the Excel file was created successfully
 if ($excel) {
     Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "The Excel file was created successfully." -ForegroundColor Green
+    Write-Host "The Excel file was created successfully.`n" -ForegroundColor Green
     Write-Log -Message "The Excel file was created successfully." -Level "OK" -NoConsoleOutput
 }
 else {
     Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "Failed to create the Excel file." -ForegroundColor Red
+    Write-Host "Failed to create the Excel file.`n" -ForegroundColor Red
     Write-Log -Message "Failed to create the Excel file." -Level "Error" -NoConsoleOutput
 }
 # Save and close the Excel package
 $excel.Save()
 $excel.Dispose()
+Write-Host "+$line+" -ForegroundColor Cyan
+# write a message to the console
+Write-Host "`n$Spaces$($taskNumber). Script execution completed successfully.`n" -ForegroundColor Cyan
+# Log the successful completion of the script
+Write-Log -Message "Script execution completed successfully." -Level "OK" -NoConsoleOutput
+# Stop logging
+Stop-Log
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
