@@ -415,9 +415,7 @@ for ($i = 2; $i -le $combinedUsersWorksheet.Dimension.End.Row; $i++) {
     for ($j = 2; $j -le $userRolesPermissionsWorksheet.Dimension.End.Row; $j++) {
         if ($userRolesPermissionsWorksheet.Cells[$j, "Type of user"].Value -eq $typeOfUser) {
             # Create a hyperlink to the UserRolesPermissions
-            $hyperlink = New-Object -TypeName OfficeOpenXml.ExcelHyperLink -ArgumentList "UserRolesPermissions!A$j"
-            $hyperlink.Address = $userRolesPermissionsWorksheet.Cells[$j, "Type of user"].FullAddress
-            $combinedUsersWorksheet.Cells[$i, "Type of user"].Hyperlink = $hyperlink
+            $combinedUsersWorksheet.Cells[$i, "Type of user"].Hyperlink = New-Object -TypeName Uri -ArgumentList ("internal:'UserRolesPermissions'!A$j")
             $combinedUsersWorksheet.Cells[$i, "Type of user"].Style.Font.UnderLine = $true
             $combinedUsersWorksheet.Cells[$i, "Type of user"].Style.Font.Color.SetColor([System.Drawing.Color]::Blue)
             break
