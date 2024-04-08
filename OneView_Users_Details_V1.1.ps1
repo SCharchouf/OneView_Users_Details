@@ -387,7 +387,7 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -AutoFilter `
     -FreezeTopRow `
     -WorksheetName "CombinedUsers" `
-    -TableStyle "Medium11" `
+    -TableStyle "Dark11" `
     -PassThru
 # Check if the Excel file was created successfully
 if ($excel) {
