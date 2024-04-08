@@ -388,9 +388,8 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -TableStyle "Medium11" `
     -PassThru
 
-# Save and close the Excel package
+# Save the Excel package
 $excel.Save()
-$excel.Dispose()
 
 # Create a new Excel.Application object and set its properties
 $xl = new-object -c excel.application
@@ -398,7 +397,7 @@ $xl.Visible = $false # hide the Excel application
 $xl.displayAlerts = $false # don't prompt the user
 
 # Define the full paths to the source and destination files
-$file1 = Resolve-Path ".\User_Roles_Permissions\User_Roles_Permissions.xlsx" # source's fullpath
+$file1 = Resolve-Path "..\User_Roles_Permissions\User_Roles_Permissions.xlsx" # source's fullpath
 $file2 = $combinedUsersExcelPath # destination's fullpath
 
 # Open the source workbook in read-only mode
@@ -481,14 +480,5 @@ Write-Log -Message "Script execution completed successfully." -Level "OK" -NoCon
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
-# Complettion Date & Time based on Complete-Logging function
-$completionTime = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
-# Write the completion time to the console
-Write-Host "`n$Spaces$($taskNumber). Script completion time:" -NoNewline -ForegroundColor DarkGray
-Write-Host "[$completionTime]" -ForegroundColor Cyan
-# Say if the script execution was successful using the Complete-Logging function
-
-Write-Host "[$completionTime]"
-
 # Call Complete-Logging at the end of the script
 Complete-Logging -LogPath $script:LogPath -ErrorCount $ErrorCount -WarningCount $WarningCount -TotalRuntime $totalRuntime
