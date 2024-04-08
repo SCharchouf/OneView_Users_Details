@@ -391,85 +391,21 @@ $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -WorksheetName "CombinedUsers" `
     -TableStyle "Medium11" `
     -PassThru
-
-# Create a new Excel.Application object and set its properties
-$xl = new-object -c excel.application
-$xl.Visible = $false # hide the Excel application
-$xl.displayAlerts = $false # don't prompt the user
-
-# Define the full paths to the source and destination files
-$file1 = Resolve-Path "..\User_Roles_Permissions\User_Roles_Permissions.xlsx" # source's fullpath
-$file2 = $combinedUsersExcelPath # destination's fullpath
-
-# Open the source workbook in read-only mode
-$wb2 = $xl.workbooks.open($file1, $null, $true) # open source, readonly
-
-# Define a script block for opening the workbook
-$openWorkbook = {
-    param($xl, $file)
-    $xl.workbooks.open($file)
-}
-
-# Define the maximum number of retries
-$maxRetries = 5
-
-# Initialize the retry counter
-$retryCount = 0
-
-# Initialize the result
-$wb1 = $null
-
-# Try to open the workbook
-while ($retryCount -lt $maxRetries -and $null -eq $wb1) {
-    try {
-        $wb1 = & $openWorkbook $xl $file2
-    }
-    catch {
-        # Wait for a bit before retrying
-        Start-Sleep -Seconds 2
-        $retryCount++
-    }
-}
-
-# If the workbook is still null, throw an exception
-if ($null -eq $wb1) {
-    throw "Failed to open the workbook after $maxRetries retries."
-}
-
-# Define the source sheet to copy
-$sheetToCopy = $wb2.sheets.item('User_Roles') # source sheet to copy
-
-# Copy the source sheet to the end of the destination workbook
-$sheetToCopy.copy($null, $wb1.sheets.item($wb1.Sheets.Count)) # copy source sheet to the end of destination workbook
-
-# Close the source workbook without saving and the destination workbook with saving
-$wb2.close($false) # close source workbook w/o saving
-$wb1.close($true) # close and save destination workbook
-
-# Quit the Excel application
-$xl.quit()
-
-# Release the COM objects
-[System.Runtime.Interopservices.Marshal]::ReleaseComObject($sheetToCopy) | Out-Null
-[System.Runtime.Interopservices.Marshal]::ReleaseComObject($wb1) | Out-Null
-[System.Runtime.Interopservices.Marshal]::ReleaseComObject($wb2) | Out-Null
-[System.Runtime.Interopservices.Marshal]::ReleaseComObject($xl) | Out-Null
-
-# Force garbage collection to clean up the COM objects
-[System.GC]::Collect()
-[System.GC]::WaitForPendingFinalizers()
-
-# Check if the Excel file was created successfully
-if (Test-Path -Path $file2) {
+# Add a delay to give Export-Excel time to finish writing the file
+Start-Sleep -Seconds 5
+# Confirm that the Excel file was created successfully
+if (Test-Path -Path $combinedUsersExcelPath) {
     Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "The Excel file was created successfully.`n" -ForegroundColor Green
-    Write-Log -Message "The Excel file was created successfully." -Level "OK" -NoConsoleOutput
+    Write-Host "The Excel file was created successfully at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $combinedUsersExcelPath" -ForegroundColor Green
+    Write-Log -Message "The Excel file was created successfully at $combinedUsersExcelPath" -Level "OK" -NoConsoleOutput
 }
 else {
     Write-Host "`t• " -NoNewline -ForegroundColor White
-    Write-Host "Failed to create the Excel file.`n" -ForegroundColor Red
+    Write-Host "Failed to create the Excel file." -ForegroundColor Red
     Write-Log -Message "Failed to create the Excel file." -Level "Error" -NoConsoleOutput
 }
+
 Write-Host "+$line+" -ForegroundColor DarkGray
 # Increment $script:taskNumber after the function call
 $script:taskNumber++
