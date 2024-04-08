@@ -402,11 +402,6 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -FreezeTopRow `
     -WorksheetName "CombinedUsers" `
     -TableStyle "Medium11" `
-    -PassThru
-# Import the Worksheet that include User roles and permissions information
-$UserRolesWorksheet = Import-Excel -Path ".\User_Roles_Permissions\User_Roles_Permissions.xlsx" -WorksheetName "User_Roles"
-# Add the User Role Worksheet to the target Excel file
-$excel = $excel | Add-Worksheet -WorksheetName "UserRoles" -DataTable $UserRolesWorksheet
 # Check if the Excel file was created successfully
 if ($excel) {
     Write-Host "`t• " -NoNewline -ForegroundColor White
