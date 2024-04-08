@@ -344,6 +344,8 @@ $selectedLdapGroups = $allLdapGroupsCsv | Select-Object ApplianceConnection, typ
 # Combine all local users and LDAP groups into a single array
 $combinedUsers = $selectedLocalUsers + $selectedLdapGroups
 # Define Close-ExcelFile function to close the Excel file if it is open, if not open says it at console
+I solved the issue by updating the code like this:
+
 function Close-ExcelFile {
     param (
         [Parameter(Mandatory = $true)]
@@ -360,9 +362,9 @@ function Close-ExcelFile {
             Write-Log -Message "The Excel file was already closed." -Level "Info" -NoConsoleOutput
         }
     }
-    catch [System.IO.IOException] {
-        # If an IOException is thrown, the file is open
-        $excelFile = Get-Process | Where-Object { $_.MainWindowTitle -eq $ExcelFilePath }
+    catch {
+        # If an exception is thrown, the file is open
+        $excelFile = Get-Process | Where-Object { $_.MainWindowTitle -like "*Excel*" }
         if ($excelFile) {
             # Close the Excel file
             $excelFile | Stop-Process -Force
@@ -370,12 +372,6 @@ function Close-ExcelFile {
             Write-Host "The Excel file was open and has been closed.`n" -ForegroundColor Green
             Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
         }
-    }
-    catch {
-        # Handle other exceptions
-        Write-Host "`t• " -NoNewline -ForegroundColor White
-        Write-Host "An error occurred while accessing the Excel file.`n" -ForegroundColor Red
-        Write-Log -Message "An error occurred while accessing the Excel file." -Level "Error" -NoConsoleOutput
     }
 }
 # Close the Excel file if it is open
@@ -386,12 +382,13 @@ Start-Sleep -Seconds 5
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the data to Excel
 $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
-    -ClearSheet ` # Clear the existing data in the Excel file
-    -AutoSize ` # Automatically adjust the column width
-    -AutoFilter ` # Enable the AutoFilter feature
-    -FreezeTopRow ` # Freeze the top row
-    -WorksheetName "CombinedUsers" ` # Set the worksheet name
-    -TableStyle "Medium11" ` # Set the table style
+    -ClearSheet `
+    -AutoSize `
+    -AutoFilter `
+    -FreezeTopRow `
+    -WorksheetName "CombinedUsers" `
+    -TableStyle "Medium11" `
+    -PassThru
 # Check if the Excel file was created successfully
 if ($excel) {
     Write-Host "`t• " -NoNewline -ForegroundColor White
