@@ -377,13 +377,6 @@ function Close-ExcelFile {
         Write-Host "An error occurred while accessing the Excel file.`n" -ForegroundColor Red
         Write-Log -Message "An error occurred while accessing the Excel file." -Level "Error" -NoConsoleOutput
     }
-    finally {
-        # Save and close the Excel package
-        if ($excel) {
-            $excel.Save()
-            $excel.Dispose()
-        }
-    }
 }
 # Close the Excel file if it is open
 Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
