@@ -344,8 +344,6 @@ $selectedLdapGroups = $allLdapGroupsCsv | Select-Object ApplianceConnection, typ
 # Combine all local users and LDAP groups into a single array
 $combinedUsers = $selectedLocalUsers + $selectedLdapGroups
 # Define Close-ExcelFile function to close the Excel file if it is open, if not open says it at console
-I solved the issue by updating the code like this:
-
 function Close-ExcelFile {
     param (
         [Parameter(Mandatory = $true)]
