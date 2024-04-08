@@ -379,7 +379,7 @@ Start-Sleep -Seconds 5
 # Sort the combined users by ApplianceConnection and then by userName
 $sortedCombinedUsers = $combinedUsers | Sort-Object ApplianceConnection, type
 # Export the data to Excel
-$excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
+$sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -ClearSheet `
     -AutoSize `
     -AutoFilter `
@@ -387,9 +387,6 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -WorksheetName "CombinedUsers" `
     -TableStyle "Medium11" `
     -PassThru
-
-# Save the Excel package
-$excel.Save()
 
 # Create a new Excel.Application object and set its properties
 $xl = new-object -c excel.application
