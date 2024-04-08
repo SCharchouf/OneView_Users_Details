@@ -350,32 +350,34 @@ function Close-ExcelFile {
         [ValidateNotNullOrEmpty()]
         [string]$ExcelFilePath
     )
-    try {
-        # Try to open the file in ReadWrite mode
-        $fileStream = [System.IO.File]::Open($ExcelFilePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
-        if ($fileStream) {
-            $fileStream.Close()
+
+    # Create a new Excel COM object
+    $excel = New-Object -ComObject Excel.Application
+
+    # Hide the Excel application
+    $excel.Visible = $false
+
+    # Iterate over all open workbooks
+    foreach ($workbook in $excel.Workbooks) {
+        # If the workbook's full name matches the file path, close it
+        if ($workbook.FullName -eq $ExcelFilePath) {
+            $workbook.Close($false)  # Don't save changes
             Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The Excel file was already closed.`n" -ForegroundColor Yellow
-            Write-Log -Message "The Excel file was already closed." -Level "Info" -NoConsoleOutput
+            Write-Host "The Excel file was open and has been closed.`n" -ForegroundColor Green
+            Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
+            break
         }
     }
-    catch {
-        # If an exception is thrown, the file is open
-        $excelFile = Get-Process | Where-Object { $_.MainWindowTitle -like "*Excel*" }
-        if ($excelFile) {
-            # Get the full path of the open Excel file
-            $openFilePath = $excelFile.MainWindowTitle -replace 'Microsoft Excel - ', ''
-            # If the open file is the one we want to close, stop the process
-            if ($openFilePath -eq $ExcelFilePath) {
-                $excelFile | Stop-Process -Force
-                Write-Host "`t• " -NoNewline -ForegroundColor White
-                Write-Host "The Excel file was open and has been closed.`n" -ForegroundColor Green
-                Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
-            }
-        }
-    }
+
+    # Quit the Excel application
+    $excel.Quit()
+
+    # Release the COM object
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
+    [System.GC]::Collect()
+    [System.GC]::WaitForPendingFinalizers()
 }
+
 # Close the Excel file if it is open
 Close-ExcelFile -ExcelFilePath $combinedUsersExcelPath
 # Add a delay to ensure the Excel file is closed before exporting the data
