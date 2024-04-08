@@ -328,6 +328,8 @@ $allLocalUsers | Export-Excel -Path $localUsersExcelPath
 # Export the LDAP groups to an Excel file with timestamp
 $ldapGroupsExcelPath = Join-Path -Path $excelDir -ChildPath "LdapGroups_$((Get-Date).ToString('yyyyMMdd-HHmmss')).xlsx"
 $allLdapGroups | Export-Excel -Path $ldapGroupsExcelPath
+# Export the combined users to an Excel file with timestamp
+$combinedUsersExcelPath = Join-Path -Path $excelDir -ChildPath "CombinedUsers_$((Get-Date).ToString('yyyyMMdd-HHmmss')).xlsx"
 # Assign the local users and LDAP groups to variables
 $allLocalUsersCsv = $allLocalUsers
 $allLdapGroupsCsv = $allLdapGroups
