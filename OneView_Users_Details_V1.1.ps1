@@ -390,9 +390,8 @@ $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -FreezeTopRow `
     -WorksheetName "CombinedUsers" `
     -TableStyle "Medium11" `
-    -PassThru
-# Add a delay to give Export-Excel time to finish writing the file
-Start-Sleep -Seconds 5
+    # Add a delay to give Export-Excel time to finish writing the file
+    Start-Sleep -Seconds 5
 # Confirm that the Excel file was created successfully
 if (Test-Path -Path $combinedUsersExcelPath) {
     Write-Host "`t• " -NoNewline -ForegroundColor White
@@ -405,8 +404,6 @@ else {
     Write-Host "Failed to create the Excel file." -ForegroundColor Red
     Write-Log -Message "Failed to create the Excel file." -Level "Error" -NoConsoleOutput
 }
-
-Write-Host "+$line+" -ForegroundColor DarkGray
 # Increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 7: Script execution completed successfully
