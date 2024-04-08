@@ -401,9 +401,40 @@ $xl.displayAlerts = $false # don't prompt the user
 $file1 = Resolve-Path ".\User_Roles_Permissions\User_Roles_Permissions.xlsx" # source's fullpath
 $file2 = $combinedUsersExcelPath # destination's fullpath
 
-# Open the source workbook in read-only mode and the destination workbook
+# Open the source workbook in read-only mode
 $wb2 = $xl.workbooks.open($file1, $null, $true) # open source, readonly
-$wb1 = $xl.workbooks.open($file2) # open target
+
+# Define a script block for opening the workbook
+$openWorkbook = {
+    param($xl, $file)
+    $xl.workbooks.open($file)
+}
+
+# Define the maximum number of retries
+$maxRetries = 5
+
+# Initialize the retry counter
+$retryCount = 0
+
+# Initialize the result
+$wb1 = $null
+
+# Try to open the workbook
+while ($retryCount -lt $maxRetries -and $null -eq $wb1) {
+    try {
+        $wb1 = & $openWorkbook $xl $file2
+    }
+    catch {
+        # Wait for a bit before retrying
+        Start-Sleep -Seconds 2
+        $retryCount++
+    }
+}
+
+# If the workbook is still null, throw an exception
+if ($null -eq $wb1) {
+    throw "Failed to open the workbook after $maxRetries retries."
+}
 
 # Define the source sheet to copy
 $sheetToCopy = $wb2.sheets.item('User_Roles') # source sheet to copy
