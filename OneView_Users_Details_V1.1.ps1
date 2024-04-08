@@ -59,7 +59,7 @@ function Import-ModulesIfNotExists {
     # Start logging
     Start-Log -ScriptVersion $ScriptVersion -ScriptPath $PSCommandPath
     # Task 1: Checking required modules
-    Write-Host "`n$Spaces$($taskNumber). Checking required modules:`n" -ForegroundColor Cyan
+    Write-Host "`n$Spaces$($taskNumber). Checking required modules:`n" -ForegroundColor Magenta
     # Log the task
     Write-Log -Message "Checking required modules." -Level "Info" -NoConsoleOutput
     # Increment $script:taskNumber after the function call
@@ -126,7 +126,7 @@ $csvFilePath = Join-Path -Path $parentDirectory -ChildPath $csvFileName
 # Define the path to the credential folder
 $credentialFolder = Join-Path -Path $parentDirectory -ChildPath "Credential"
 # Task 2: import Appliances list from the CSV file.
-Write-Host "`n$Spaces$($taskNumber). Importing Appliances list from the CSV file:`n" -ForegroundColor Cyan
+Write-Host "`n$Spaces$($taskNumber). Importing Appliances list from the CSV file:`n" -ForegroundColor Magenta
 # Import Appliances list from CSV file
 $Appliances = Import-Csv -Path $csvFilePath
 # Confirm that the CSV file was imported successfully
@@ -156,7 +156,7 @@ else {
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 3: Check if credential folder exists
-Write-Host "`n$Spaces$($taskNumber). Checking for credential folder:`n" -ForegroundColor Cyan
+Write-Host "`n$Spaces$($taskNumber). Checking for credential folder:`n" -ForegroundColor Magenta
 # Log the task
 Write-Log -Message "Checking for credential folder." -Level "Info" -NoConsoleOutput
 # Check if the credential folder exists, if not say it at console and create it, if already exist say it at console
@@ -188,7 +188,7 @@ $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 4: Check CSV & Excel Folders exists.
-Write-Host "`n$Spaces$($taskNumber). Check CSV & Excel Folders exists:`n" -ForegroundColor Cyan
+Write-Host "`n$Spaces$($taskNumber). Check CSV & Excel Folders exists:`n" -ForegroundColor Magenta
 # Check if the credential file exists
 if (-not (Test-Path -Path $credentialFile)) {
     # Prompt the user to enter their login and password
@@ -264,7 +264,7 @@ $combinedUsersExcelPath = Join-Path -Path $excelDir -ChildPath 'CombinedUsers.xl
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 5: Collecting user details from each appliance
-Write-Host "`n$Spaces$($taskNumber). Collecting user details from each appliance:`n" -ForegroundColor Cyan
+Write-Host "`n$Spaces$($taskNumber). Collecting user details from each appliance:`n" -ForegroundColor Magenta
 # Loop through each appliance
 foreach ($appliance in $Appliances) {
     # Convert the FQDN to uppercase
@@ -321,7 +321,7 @@ foreach ($appliance in $Appliances) {
 # increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 6: Exporting user details to CSV and Excel files
-Write-Host "`n$Spaces$($taskNumber). Exporting user details to CSV and Excel files:`n" -ForegroundColor Cyan
+Write-Host "`n$Spaces$($taskNumber). Exporting user details to CSV and Excel files:`n" -ForegroundColor Magenta
 # Export the local users to an Excel file with timestamp
 $localUsersExcelPath = Join-Path -Path $excelDir -ChildPath "LocalUsers_$((Get-Date).ToString('yyyyMMdd-HHmmss')).xlsx"
 $allLocalUsers | Export-Excel -Path $localUsersExcelPath
@@ -387,7 +387,11 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -WorksheetName "CombinedUsers" `
     -TableStyle "Medium11" `
     -PassThru
-# Check if the Excel file was created successfully
+# Import the Worksheet that include User roles and permissions information
+$UserRolesWorksheet = Import-Excel -Path ".\User_Roles_Permissions\User_Roles_Permissions.xlsx" -WorksheetName "UserRoles"
+# Add the User Role Worksheet to the target Excel file
+$excel = $excel | Add-Worksheet -WorksheetName "UserRoles" -DataTable $UserRolesWorksheet
+    # Check if the Excel file was created successfully
 if ($excel) {
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "The Excel file was created successfully.`n" -ForegroundColor Green
@@ -405,12 +409,21 @@ Write-Host "+$line+" -ForegroundColor DarkGray
 # Increment $script:taskNumber after the function call
 $script:taskNumber++
 # Task 7: Script execution completed successfully
-# write a message to the console
-Write-Host "`n$Spaces$($taskNumber). Script execution completed successfully.`n" -ForegroundColor Cyan
+# write a message to the console indicating a summary of the script execution
+Write-Host "`n$Spaces$($taskNumber). Summary of script execution.`n" -ForegroundColor Magenta
 # Log the successful completion of the script
 Write-Log -Message "Script execution completed successfully." -Level "OK" -NoConsoleOutput
 # Just before calling Complete-Logging
 $endTime = Get-Date
 $totalRuntime = $endTime - $startTime
+# Complettion Date & Time based on Complete-Logging function
+$completionTime = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
+# Write the completion time to the console
+Write-Host "`n$Spaces$($taskNumber). Script completion time:" -NoNewline -ForegroundColor DarkGray
+Write-Host "[$completionTime]" -ForegroundColor Cyan
+# Say if the script execution was successful using the Complete-Logging function
+
+Write-Host "[$completionTime]"
+
 # Call Complete-Logging at the end of the script
 Complete-Logging -LogPath $script:LogPath -ErrorCount $ErrorCount -WarningCount $WarningCount -TotalRuntime $totalRuntime
