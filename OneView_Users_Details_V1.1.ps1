@@ -387,12 +387,49 @@ $excel = $sortedCombinedUsers | Export-Excel -Path $combinedUsersExcelPath `
     -WorksheetName "CombinedUsers" `
     -TableStyle "Medium11" `
     -PassThru
-# Import the Worksheet that include User roles and permissions information
-$UserRolesWorksheet = Import-Excel -Path ".\User_Roles_Permissions\User_Roles_Permissions.xlsx" -WorksheetName "UserRoles"
-# Add the User Role Worksheet to the target Excel file
-$excel = $excel | Add-Worksheet -WorksheetName "UserRoles" -DataTable $UserRolesWorksheet
-    # Check if the Excel file was created successfully
-if ($excel) {
+
+# Save and close the Excel package
+$excel.Save()
+$excel.Dispose()
+
+# Create a new Excel.Application object and set its properties
+$xl = new-object -c excel.application
+$xl.Visible = $false # hide the Excel application
+$xl.displayAlerts = $false # don't prompt the user
+
+# Define the full paths to the source and destination files
+$file1 = Resolve-Path ".\User_Roles_Permissions\User_Roles_Permissions.xlsx" # source's fullpath
+$file2 = $combinedUsersExcelPath # destination's fullpath
+
+# Open the source workbook in read-only mode and the destination workbook
+$wb2 = $xl.workbooks.open($file1, $null, $true) # open source, readonly
+$wb1 = $xl.workbooks.open($file2) # open target
+
+# Define the source sheet to copy
+$sheetToCopy = $wb2.sheets.item('User_Roles') # source sheet to copy
+
+# Copy the source sheet to the end of the destination workbook
+$sheetToCopy.copy($null, $wb1.sheets.item($wb1.Sheets.Count)) # copy source sheet to the end of destination workbook
+
+# Close the source workbook without saving and the destination workbook with saving
+$wb2.close($false) # close source workbook w/o saving
+$wb1.close($true) # close and save destination workbook
+
+# Quit the Excel application
+$xl.quit()
+
+# Release the COM objects
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($sheetToCopy) | Out-Null
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($wb1) | Out-Null
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($wb2) | Out-Null
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($xl) | Out-Null
+
+# Force garbage collection to clean up the COM objects
+[System.GC]::Collect()
+[System.GC]::WaitForPendingFinalizers()
+
+# Check if the Excel file was created successfully
+if (Test-Path -Path $file2) {
     Write-Host "`t• " -NoNewline -ForegroundColor White
     Write-Host "The Excel file was created successfully.`n" -ForegroundColor Green
     Write-Log -Message "The Excel file was created successfully." -Level "OK" -NoConsoleOutput
@@ -402,9 +439,6 @@ else {
     Write-Host "Failed to create the Excel file.`n" -ForegroundColor Red
     Write-Log -Message "Failed to create the Excel file." -Level "Error" -NoConsoleOutput
 }
-# Save and close the Excel package
-$excel.Save()
-$excel.Dispose()
 Write-Host "+$line+" -ForegroundColor DarkGray
 # Increment $script:taskNumber after the function call
 $script:taskNumber++
