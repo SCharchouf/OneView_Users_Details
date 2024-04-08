@@ -364,11 +364,15 @@ function Close-ExcelFile {
         # If an exception is thrown, the file is open
         $excelFile = Get-Process | Where-Object { $_.MainWindowTitle -like "*Excel*" }
         if ($excelFile) {
-            # Close the Excel file
-            $excelFile | Stop-Process -Force
-            Write-Host "`t• " -NoNewline -ForegroundColor White
-            Write-Host "The Excel file was open and has been closed.`n" -ForegroundColor Green
-            Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
+            # Get the full path of the open Excel file
+            $openFilePath = $excelFile.MainWindowTitle -replace 'Microsoft Excel - ', ''
+            # If the open file is the one we want to close, stop the process
+            if ($openFilePath -eq $ExcelFilePath) {
+                $excelFile | Stop-Process -Force
+                Write-Host "`t• " -NoNewline -ForegroundColor White
+                Write-Host "The Excel file was open and has been closed.`n" -ForegroundColor Green
+                Write-Log -Message "The Excel file was open and has been closed." -Level "OK" -NoConsoleOutput
+            }
         }
     }
 }
