@@ -124,7 +124,31 @@ $parentDirectory = Split-Path -Path $scriptDirectory -Parent
 # Create the full path to the CSV file
 $csvFilePath = Join-Path -Path $parentDirectory -ChildPath $csvFileName
 # Define the path to the credential folder
-$credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "credential"
+$credentialFolder = Join-Path -Path $scriptDirectory -ChildPath "Credential"
+# Check if the credential folder exists, if not say it at console and create it, if already exist say it at console
+if (Test-Path -Path $credentialFolder) {
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Credential folder already exists at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $credentialFolder" -ForegroundColor Yellow
+    # Write a message to the log file
+    Write-Log -Message "Credential folder already exists at $credentialFolder" -Level "Info" -NoConsoleOutput
+}
+else {
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Credential folder does not exist." -NoNewline -ForegroundColor Red
+    Write-Host " Creating now..." -ForegroundColor DarkGray
+    Write-Log -Message "Credential folder does not exist, creating now..." -Level "Info" -NoConsoleOutput
+    # Create the credential folder if it does not exist already
+    New-Item -ItemType Directory -Path $credentialFolder | Out-Null
+    # Write a message to the console
+    Write-Host "`t• " -NoNewline -ForegroundColor White
+    Write-Host "Credential folder created at:" -NoNewline -ForegroundColor DarkGray
+    Write-Host " $credentialFolder" -ForegroundColor Green
+    # Write a message to the log file
+    Write-Log -Message "Credential folder created at $credentialFolder" -Level "OK" -NoConsoleOutput
+}
 # Define the path to the credential file
 $credentialFile = Join-Path -Path $credentialFolder -ChildPath "credential.txt"
 # Second Task import Appliances list from the CSV file and loop through each appliance to collect user details.
